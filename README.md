@@ -26,13 +26,23 @@
        cp .env.example .env
 
 Editar el archivo .env con los datos de la base de datos.
-5. Generar la clave de la aplicación
+6. Generar la clave de la aplicación
 
         php artisan key:generate
 
-7. Ejecutar migraciones y seeders
+La base de datos esta en el archivo /database/appgestion.sql, se exporta en phpmyadmin y ya contiene dos usuarios
+Los usuarios son:
+
+    admin@gmail.com  => user Admin
+    12345678
+y
+
+    jugador@gmail.com
+    12345678
+
+7. Ejecutar migraciones
    
-       php artisan migrate --seed
+       php artisan migrate 
 
 9. Ejecutar el servidor
 
