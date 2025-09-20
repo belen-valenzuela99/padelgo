@@ -1,4 +1,8 @@
-<!-- jugador/dashboard.blade.php -->
-<x-app-layout>
-    <h1>Bienvenido, Jugador</h1>
-</x-app-layout>
+@extends('layouts.main')
+
+@section('title', 'Dashboard Jugador')
+
+@section('content')
+    <h1>Bienvenido al Dashboard Jugador</h1>
+    <p>Aquí puedes ver tus partidas y logros.</p>
+@endsection

@@ -1,4 +1,8 @@
-<!-- admin/dashboard.blade.php -->
-<x-app-layout>
-    <h1>Bienvenido, Admin</h1>
-</x-app-layout>
+@extends('layouts.main')
+
+@section('title', 'Dashboard Admin')
+
+@section('content')
+    <h1>Bienvenido al Dashboard Admin</h1>
+    <p>Aquí van tus estadísticas y enlaces importantes.</p>
+@endsection
