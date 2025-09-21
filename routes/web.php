@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CanchasController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -23,6 +24,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/dashboard', function () {
         return view('admin.dashboard');
     })->name('admin.dashboard');
+
+    Route::resource('canchas', CanchasController::class);
 });
 
 // ================== DASHBOARD JUGADOR ==================

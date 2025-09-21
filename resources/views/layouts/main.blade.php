@@ -30,6 +30,11 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
                         </li>
+                        @if(Auth::user()->role === 'admin')
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('canchas.index') }}">Canchas</a>
+                            </li>
+                        @endif
                         <li class="nav-item dropdown">
                             <button class="btn border dropdown-toggle" type="button" id="userDropdown"
                                     data-bs-toggle="dropdown" aria-expanded="false">
