@@ -10,7 +10,7 @@
 
 1. Clonar el repositorio
    ```bash
-   git clone https://github.com/GaleanoSantiago/appGestion.git
+   git clone https://github.com/belen-valenzuela99/padelgo.git
    cd tu-repo
 
 2. Instalar dependencias de PHP
