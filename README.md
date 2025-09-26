@@ -2,7 +2,7 @@
 
 ## Requisitos
 - PHP 8.2+
-- Composer
+- Composer.
 - Node.js y npm
 - MySQL o MariaDB
 
