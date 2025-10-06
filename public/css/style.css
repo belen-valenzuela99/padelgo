@@ -1,0 +1,32 @@
+
+.horarios{
+    display:flex;
+    padding: 10px 0px;
+}
+
+.hora{
+    padding: 5px 9px; 
+    transition: all .4s ease-in-out;
+    cursor: pointer;
+}
+
+.hora:hover{
+    background-color: rgb(165, 199, 115);
+    transition: all .4s ease-in-out;
+}
+
+.fecha-actual{
+    font-size: 1.2rem;
+    
+}
+
+.contenedor-fecha-actual{
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.btn.dia{
+    border: 1px solid rgb(148, 148, 148);
+
+}

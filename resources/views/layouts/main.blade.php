@@ -6,6 +6,7 @@
     <title>@yield('title', 'Mi Proyecto')</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 </head>
 <body>
     <!-- Navbar -->
@@ -27,7 +28,6 @@
                 <ul class="navbar-nav w-100 d-flex justify-content-end gap-4">
                     
                     @auth
-                        <li class="nav-item">
                             <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
                         </li>
                         @if(Auth::user()->role === 'admin')

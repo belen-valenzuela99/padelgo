@@ -3,10 +3,11 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CanchasController;
+use App\Http\Controllers\ReservaController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+//Route::get('/', function () {
+    //return view('welcome');
+//});
 
 // Redirección dinámica según el rol del usuario
 Route::get('/dashboard', function () {
@@ -41,5 +42,12 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::get('/', [ReservaController::class, 'index'])->name('reservas.index');
+
+
+
+
+
 
 require __DIR__.'/auth.php';
