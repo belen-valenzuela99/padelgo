@@ -1,8 +1,8 @@
-extends('layouts.main')
+@extends('layouts.main')
 
 @section('content')
 <div class="container py-4">
-    <h2 class="mb-4">Editar Club</h2>
+    <h2 class="mb-4">Editar club</h2>
 
     @if($errors->any())
         <div class="alert alert-danger">
@@ -15,7 +15,7 @@ extends('layouts.main')
     @endif
 
     <form action="{{ route('clubes.update', $club->id) }}" method="POST">
-@csrf
+        @csrf
         @method('PUT')
 
         <div class="mb-3">
@@ -24,8 +24,8 @@ extends('layouts.main')
         </div>
 
         <div class="mb-3">
-            <label for="direccion" class="form-label">Direccion</label>
-            <textarea class="form-control" id="direccion" name="direccion" rows="3">{{ old('direccion', $club->direccion) }}</textarea>
+            <label for="ubicacion" class="form-label">Ubicacion</label>
+            <textarea class="form-control" id="ubicacion" name="ubicacion" rows="3">{{ old('ubicacion', $club->ubicacion) }}</textarea>
         </div>
 
         <button type="submit" class="btn btn-primary">Actualizar</button>

@@ -12,7 +12,7 @@ class ClubController extends Controller
      */
     public function index()
     {
-                $clubes = Club::all();
+        $clubes = Club::all();
         return view('admin.clubes.index', compact('clubes'));
     }
     /**

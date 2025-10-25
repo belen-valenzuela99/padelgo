@@ -28,7 +28,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     })->name('admin.dashboard');
     Route::resource('canchas', CanchasController::class);
     // Se agrega la ruta dentro del middleware del admin o del jugador, 
-    Route::resource('clubes', ClubController::class);
+    Route::resource('clubes', ClubController::class)->parameters(['clubes' => 'club']);
+
 
 });
 
