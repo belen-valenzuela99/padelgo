@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CanchasController;
 use App\Http\Controllers\ReservaController;
+use App\Http\Controllers\ClubController;
 
 //Route::get('/', function () {
     //return view('welcome');
@@ -25,8 +26,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/dashboard', function () {
         return view('admin.dashboard');
     })->name('admin.dashboard');
-
     Route::resource('canchas', CanchasController::class);
+    // Se agrega la ruta dentro del middleware del admin o del jugador, 
+    Route::resource('clubes', ClubController::class);
+
 });
 
 // ================== DASHBOARD JUGADOR ==================

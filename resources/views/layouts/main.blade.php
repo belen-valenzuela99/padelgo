@@ -13,11 +13,11 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
         <div class="container">
             @auth
-                <a class="navbar-brand" href="{{ route('dashboard') }}">PaddelGo</a>
+                <a class="navbar-brand" href="{{ route('dashboard') }}">PadelGo</a>
             
             @endauth
             @guest
-                <a class="navbar-brand" href="#">PaddelGo</a>
+                <a class="navbar-brand" href="#">PadelGo</a>
 
             @endguest
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">

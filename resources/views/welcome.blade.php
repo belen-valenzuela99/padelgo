@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function cambiarDia(dias) {
         fechaActual.setDate(fechaActual.getDate() + dias);
         const nuevaFecha = fechaActual.toISOString().split('T')[0];
-        window.location.href = `/reservas?fecha=${nuevaFecha}`;
+        window.location.href = `/?fecha=${nuevaFecha}`;
     }
 
     prevBtn.addEventListener('click', () => cambiarDia(-1));
