@@ -14,9 +14,10 @@
         </div>
     @endif
 
-    <form action="{{ route('clubes.update', $club->id) }}" method="POST">
+    <form action="{{ route('clubes.update', $club->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
-        @method('PUT')
+        @method('PUT') 
+
 
         <div class="mb-3">
             <label for="nombre" class="form-label">Nombre</label>
@@ -26,6 +27,18 @@
         <div class="mb-3">
             <label for="direccion" class="form-label">Direccion</label>
             <textarea class="form-control" id="direccion" name="direccion" rows="3">{{ old('direccion', $club->direccion) }}</textarea>
+        </div>
+        
+        <div class="mb-3">
+            <label for="img" class="form-label">Imagen del Club</label>
+            @if($club->img)
+                <div class="mb-2">
+                <img src="{{ asset($club->img) }}" alt="Imagen del club" class="img-thumbnail" style="max-width: 200px;">
+
+                </div>
+            @endif
+            <input type="file" class="form-control" id="img" name="img" accept="image/*">
+            <small class="text-muted">Si subes una nueva imagen, reemplazará la actual.</small>
         </div>
 
         <button type="submit" class="btn btn-primary">Actualizar</button>

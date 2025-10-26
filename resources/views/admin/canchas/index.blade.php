@@ -16,7 +16,7 @@
             <tr>
                 <th>ID</th>
                 <th>Nombre</th>
-                <th>Ubicacion</th>
+                <th>Club</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -25,7 +25,7 @@
             <tr>
                 <td>{{ $cancha->id }}</td>
                 <td>{{ $cancha->nombre }}</td>
-                <td>{{ $cancha->ubicacion }}</td>
+                <td>{{ $cancha->club ? $cancha->club->nombre : "sin club" }}</td>
                 <td>
                     <a href="{{ route('canchas.edit', $cancha->id) }}" class="btn btn-sm btn-warning">Editar</a>
 

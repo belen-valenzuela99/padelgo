@@ -13,13 +13,14 @@ class Canchas extends Model
     protected $fillable = [
         'nombre',
         'ubicacion',
+        'id_club',
     ];
 
     // Relación ejemplo: una categoría puede tener muchas partidas
-    /*public function partidas()
+    public function club()
     {
-        return $this->hasMany(Partida::class);
-    }*/
+        return $this->belongsTo(Club::class, "id_club");
+    }
         
 }
 

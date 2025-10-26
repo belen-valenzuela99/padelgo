@@ -15,6 +15,7 @@
         <thead class="table-light">
             <tr>
                 <th>ID</th>
+                <th>Imagen</th>
                 <th>Nombre</th>
                 <th>Direccion</th>
                 <th>Acciones</th>
@@ -24,6 +25,14 @@
             @forelse($clubes as $club)
             <tr>
                 <td>{{ $club->id }}</td>
+                <td>
+                    @if($club->img)
+                        <img src="{{ asset($club->img) }}" alt="Imagen del club" class="img-thumbnail" style="max-width: 120px;">
+
+                    @else
+                        <span class="text-muted">Sin imagen</span>
+                    @endif
+                </td>
                 <td>{{ $club->nombre }}</td>
                 <td>{{ $club->direccion }}</td>
                 <td>

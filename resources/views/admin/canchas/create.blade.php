@@ -22,8 +22,15 @@
         </div>
 
         <div class="mb-3">
-            <label for="ubicacion" class="form-label">Ubicacion</label>
-            <textarea class="form-control" id="ubicacion" name="ubicacion" rows="3">{{ old('ubicacion') }}</textarea>
+            <label for="id_club" class="form-label">Club asociado</label>
+            <select class="form-select" id="id_club" name="id_club" required>
+                <option value="">Seleccionar club...</option>
+                @foreach($clubes as $club)
+                    <option value="{{ $club->id }}" {{ old('id_club') == $club->id ? 'selected' : '' }}>
+                        {{ $club->nombre }}
+                    </option>
+                @endforeach
+            </select>
         </div>
 
         <button type="submit" class="btn btn-primary">Guardar</button>

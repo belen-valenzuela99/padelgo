@@ -3,37 +3,34 @@
 namespace App\Http\Controllers;
 
 use App\Models\Canchas;
+use App\Models\Club;
 use Illuminate\Http\Request;
 
 class CanchasController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
     public function index()
     {
         
-        $canchas = Canchas::all();
+        $canchas = Canchas::with('club')->get();
         return view('admin.canchas.index', compact('canchas'));
 
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    
     public function create()
-    {
-        return view('admin.canchas.create');
+    {    
+        $clubes=Club::all();
+        return view('admin.canchas.create', compact('clubes'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+
     public function store(Request $request)
     {
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'ubicacion' => 'nullable|string',
+            'id_club' => 'required|exists:clubs,id',
+
         ]);
 
         Canchas::create($request->all());
@@ -41,30 +38,25 @@ class CanchasController extends Controller
 
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Canchas $canchas)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+
     public function edit(Canchas $cancha)
-    {
-                return view('admin.canchas.edit', compact('cancha'));
+
+    {   
+        $clubes=Club::all();
+        return view('admin.canchas.edit', compact('cancha','clubes'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(Request $request, Canchas $cancha)
     {
         $request->validate([
-            'nombre' => 'required|unique:canchas,nombre,'.$cancha->id.'|max:255',
-            'ubicacion' => 'nullable',
+            'nombre' => 'required|max:255',
+            'id_club' => 'required|exists:clubs,id',
         ]);
 
         $cancha->update($request->all());
@@ -73,9 +65,6 @@ class CanchasController extends Controller
 
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Canchas $cancha)
     {
         $cancha->delete();

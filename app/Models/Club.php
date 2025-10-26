@@ -12,13 +12,14 @@ class Club extends Model
     // Campos que se pueden asignar masivamente
     protected $fillable = [
         'nombre',
+        'img',
         'direccion',
     ];
 
     // Relación ejemplo: una categoría puede tener muchas partidas
-    //public function partidas()
-   // {
-    //    return $this->hasMany(Partida::class);
-    //}
-
+    public function canchas()
+    {
+        return $this->hasMany(Canchas::class, "id_club");
+    }
+        
 }
