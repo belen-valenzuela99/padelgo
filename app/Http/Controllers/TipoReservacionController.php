@@ -12,7 +12,9 @@ class TipoReservacionController extends Controller
      */
     public function index()
     {
-        //
+        $tiporeservacion = TipoReservacion::all();
+        return view('admin.tiporeservacion.index', compact('tiporeservacion'));
+
     }
 
     /**
@@ -20,7 +22,7 @@ class TipoReservacionController extends Controller
      */
     public function create()
     {
-        //
+        return view('admin.tiporeservacion.create');
     }
 
     /**
@@ -28,7 +30,14 @@ class TipoReservacionController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'franja_horaria' => 'required|string|max:255',
+            'precio' => 'nullable|string',
+        ]);
+
+        TipoReservacion::create($request->all());
+        return redirect()->route('tiporeservacion.index')->with('success', 'Tipo de Reservacion creada correctamente.');
+
     }
 
     /**
@@ -36,30 +45,40 @@ class TipoReservacionController extends Controller
      */
     public function show(TipoReservacion $tipoReservacion)
     {
-        //
+        
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(TipoReservacion $tipoReservacion)
+    public function edit(TipoReservacion $tiporeservacion)
     {
-        //
+        return view('admin.tiporeservacion.edit', compact('tiporeservacion'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, TipoReservacion $tipoReservacion)
+    public function update(Request $request, TipoReservacion $tiporeservacion)
     {
-        //
+        $request->validate([
+            'franja_horaria' => 'string|max:255',
+            'precio' => 'nullable|integer',
+        ]);
+
+        $tiporeservacion->update($request->all());
+
+        return redirect()->route('tiporeservacion.index')->with('success', 'Tipo de Reservacion actualizada.');
+
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(TipoReservacion $tipoReservacion)
+    public function destroy(TipoReservacion $tiporeservacion)
     {
-        //
+        $tiporeservacion->delete();
+        return redirect()->route('tiporeservacion.index')->with('success', 'Tipo de Reservacion eliminada.');
+
     }
 }
