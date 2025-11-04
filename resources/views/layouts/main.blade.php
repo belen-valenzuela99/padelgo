@@ -40,6 +40,9 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('tiporeservacion.index') }}">Tipo de Reservaciones</a>
                             </li>
+                             <li class="nav-item">
+                                <a class="nav-link" href="{{ route('reservacions.index') }}">Reservaciones</a>
+                            </li>
                         @endif
                         <li class="nav-item dropdown">
                             <button class="btn border dropdown-toggle" type="button" id="userDropdown"
