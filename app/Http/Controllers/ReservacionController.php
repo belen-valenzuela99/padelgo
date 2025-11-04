@@ -12,7 +12,8 @@ class ReservacionController extends Controller
      */
     public function index()
     {
-        //
+        $categorias = Categoria::all();
+         return view('admin.categorias.index', compact('categorias'));
     }
 
     /**
@@ -20,7 +21,7 @@ class ReservacionController extends Controller
      */
     public function create()
     {
-        //
+        return view('admin.categorias.create');
     }
 
     /**
@@ -28,7 +29,13 @@ class ReservacionController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'descripcion' => 'nullable|string',
+        ]);
+
+        Categoria::create($request->all());
+       return redirect()->route('categorias.index')->with('success', 'Categoría creada correctamente.');
     }
 
     /**
@@ -44,7 +51,7 @@ class ReservacionController extends Controller
      */
     public function edit(Reservacion $reservacion)
     {
-        //
+         return view('admin.categorias.edit', compact('categoria'));
     }
 
     /**
@@ -52,7 +59,14 @@ class ReservacionController extends Controller
      */
     public function update(Request $request, Reservacion $reservacion)
     {
-        //
+        $request->validate([
+            'nombre' => 'required|unique:categorias,nombre,'.$categoria->id.'|max:255',
+            'descripcion' => 'nullable',
+        ]);
+
+        $categoria->update($request->all());
+
+        return redirect()->route('categorias.index')->with('success', 'Categoría actualizada.');
     }
 
     /**
@@ -60,6 +74,7 @@ class ReservacionController extends Controller
      */
     public function destroy(Reservacion $reservacion)
     {
-        //
+         $categoria->delete();
+        return redirect()->route('categorias.index')->with('success', 'Categoría eliminada.');
     }
 }
