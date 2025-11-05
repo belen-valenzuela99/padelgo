@@ -12,10 +12,19 @@ class Reservacion extends Model
         'user_id',
         'cancha_id',
         'reservacion_date',
+        'hora_inicio',
+        'hora_final',
         'id_tipo_reservacion',
-        'status'
+        'status',
+        
+    ];
+    public const STATUS = [
+        'programado',
+        'cancelado',
+        'turno perdido',
+        'turno completado',
     ];
 
-    // Relación ejemplo: una categoría puede tener muchas partidas
+
 
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\CanchasController;
 use App\Http\Controllers\ReservaController;
 use App\Http\Controllers\ClubController;
 use App\Http\Controllers\TipoReservacionController;
+use App\Http\Controllers\ReservacionController;
 
 //Route::get('/', function () {
     //return view('welcome');
@@ -31,6 +32,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     // Se agrega la ruta dentro del middleware del admin o del jugador, 
     Route::resource('clubes', ClubController::class)->parameters(['clubes' => 'club']);
     Route::resource('tiporeservacion', TipoReservacionController::class);
+    Route::resource('reservacions', ReservacionController::class);
 
 
 
