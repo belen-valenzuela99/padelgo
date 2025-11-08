@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CanchasController;
 use App\Http\Controllers\ReservaController;
 use App\Http\Controllers\ClubController;
+use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\TipoReservacionController;
 use App\Http\Controllers\ReservacionController;
 
@@ -53,9 +54,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::get('/', [ReservaController::class, 'index'])->name('reservas.index');
+//Route::get('/', [ReservaController::class, 'index'])->name('reservas.index');
 
-
+Route::get('/', [FrontendController::class, 'index'])->name('home');
+Route::get('/club/{id}', [FrontendController::class, 'clubDetalle'])->name('clubDetalle');
 
 
 

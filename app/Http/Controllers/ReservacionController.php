@@ -45,8 +45,12 @@ class ReservacionController extends Controller
 
     $fechaReserva = Carbon::parse($request->fecha)->format('Y-m-d');
     $horaInicio = Carbon::parse($request->hora)->format('H:i:s');
-    $duracion = (int) $request->id_tipo_reservacion;
-    $horaFinal = Carbon::parse($horaInicio)->addHours($duracion)->format('H:i:s');
+    $id_tipo_reservacion = $request->id_tipo_reservacion;
+    
+    $duracion = TipoReservacion::find($request->id_tipo_reservacion);
+    $contenido_duracion = (int) $duracion->franja_horaria;
+
+    $horaFinal = Carbon::parse($horaInicio)->addHours($contenido_duracion)->format('H:i:s');
 
     Reservacion::create([
         'user_id' => auth()->id(),
@@ -96,9 +100,11 @@ class ReservacionController extends Controller
 
     $fechaReserva = Carbon::parse($request->fecha)->format('Y-m-d');
     $horaInicio = Carbon::parse($request->hora)->format('H:i:s');
-    $duracion = (int) $request->id_tipo_reservacion;
-    $horaFinal = Carbon::parse($horaInicio)->addHours($duracion)->format('H:i:s');
+    
+    $duracion = TipoReservacion::find($request->id_tipo_reservacion);
+    $contenido_duracion = (int) $duracion->franja_horaria;
 
+    $horaFinal = Carbon::parse($horaInicio)->addHours($contenido_duracion)->format('H:i:s');
     $reservacion->update([
         'cancha_id' => $request->cancha_id,
         'id_tipo_reservacion' => $request->id_tipo_reservacion,
