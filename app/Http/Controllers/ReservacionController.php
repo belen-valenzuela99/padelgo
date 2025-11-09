@@ -28,15 +28,36 @@ class ReservacionController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        $request->validate([
-           'nombre' => 'required|string|max:255',
-           'descripcion' => 'nullable|string'
- ]);
+{
+    $request->validate([
+        'fecha' => 'required|date',
+        'hora' => 'required',
+        'cancha_id' => 'required|exists:canchas,id',
+        'id_tipo_reservacion' => 'required|integer',
+        'status' => 'nullable|in:programado,cancelado,turno perdido,turno completado',
+    ]);
 
- Categoria::create($request->all());
- return redirect()->route('categorias.index')->with('success', 'Categoría creada correctamente.');
-    }
+    $fechaReserva = Carbon::parse($request->fecha)->format('Y-m-d');
+    $horaInicio = Carbon::parse($request->hora)->format('H:i:s');
+    $id_tipo_reservacion = $request->id_tipo_reservacion;
+    
+    $duracion = TipoReservacion::find($request->id_tipo_reservacion);
+    $contenido_duracion = (int) $duracion->franja_horaria;
+
+    $horaFinal = Carbon::parse($horaInicio)->addHours($contenido_duracion)->format('H:i:s');
+
+    Reservacion::create([
+        'user_id' => auth()->id(),
+        'cancha_id' => $request->cancha_id,
+        'id_tipo_reservacion' => $request->id_tipo_reservacion,
+        'reservacion_date' => $fechaReserva,
+        'hora_inicio' => $horaInicio,
+        'hora_final' => $horaFinal,
+        'status' => $request->status ?? 'programado',
+    ]);
+
+    return redirect()->route('reservacions.index')->with('success', 'Reservación creada correctamente.');
+}
 
     /**
      * Display the specified resource.
@@ -57,17 +78,36 @@ class ReservacionController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Reservacion $reservacion)
-    {
-        $request->validate([
-            'nombre' => 'required|unique:categorias,nombre,'.$categoria->id.'|max:255',
-            'descripcion' => 'nullable',
-        ]);
+   public function update(Request $request, $id)
+{
+    $reservacion = Reservacion::findOrFail($id);
 
-        $categoria->update($request->all());
+    $request->validate([
+        'fecha' => 'required|date',
+        'hora' => 'required',
+        'cancha_id' => 'required|exists:canchas,id',
+        'id_tipo_reservacion' => 'required|integer',
+        'status' => 'nullable|in:programado,cancelado,turno perdido,turno completado',
+    ]);
 
-        return redirect()->route('categorias.index')->with('success', 'Categoría actualizada.');
-    }
+    $fechaReserva = Carbon::parse($request->fecha)->format('Y-m-d');
+    $horaInicio = Carbon::parse($request->hora)->format('H:i:s');
+    
+    $duracion = TipoReservacion::find($request->id_tipo_reservacion);
+    $contenido_duracion = (int) $duracion->franja_horaria;
+
+    $horaFinal = Carbon::parse($horaInicio)->addHours($contenido_duracion)->format('H:i:s');
+    $reservacion->update([
+        'cancha_id' => $request->cancha_id,
+        'id_tipo_reservacion' => $request->id_tipo_reservacion,
+        'reservacion_date' => $fechaReserva,
+        'hora_inicio' => $horaInicio,
+        'hora_final' => $horaFinal,
+        'status' => $request->status ?? 'programado',
+    ]);
+
+    return redirect()->route('reservacions.index')->with('success', 'Reservación actualizada correctamente.');
+}
 
     /**
      * Remove the specified resource from storage.
