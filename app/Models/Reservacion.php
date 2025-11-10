@@ -25,6 +25,20 @@ class Reservacion extends Model
         'turno completado',
     ];
 
+    // Relaciones
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
+    public function cancha()
+    {
+        return $this->belongsTo(Canchas::class);
+    }
+
+    public function tipoReservacion()
+    {
+        return $this->belongsTo(TipoReservacion::class, 'id_tipo_reservacion');
+    }
 
 }

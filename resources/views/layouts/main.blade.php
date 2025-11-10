@@ -13,7 +13,7 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
         <div class="container">
             @auth
-                <a class="navbar-brand" href="{{ route('dashboard') }}">PadelGo</a>
+                <a class="navbar-brand" href="{{ route('home') }}">PadelGo</a>
             
             @endauth
             @guest

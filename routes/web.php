@@ -62,6 +62,8 @@ Route::middleware('auth')->group(function () {
 Route::get('/', [FrontendController::class, 'index'])->name('home');
 Route::get('/club/{id}', [FrontendController::class, 'clubDetalle'])->name('clubDetalle');
 Route::get('/reservar/{id}', [FrontendController::class, 'confirmacionReserva'])->name('confirmacionReserva');
+// Ajax para consultar horas ocupadas
+Route::get('/horas-ocupadas/{cancha}/{fecha}', [FrontendController::class, 'horasOcupadas']);
 
 
 

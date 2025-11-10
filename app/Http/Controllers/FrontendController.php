@@ -81,10 +81,16 @@ class FrontendController extends Controller
         'hora_final' => $horaFinal,
         'status' => $request->status ?? 'programado',
     ]);
-
+    $reservacion->load(['user', 'cancha', 'tipoReservacion']);
     return view('frontend.reservaTicket', compact('reservacion'))->with('success', 'Reservación creada correctamente.');
 }
+ public function horasOcupadas($canchaId,  $fecha){
+        $reservas = Reservacion::where('cancha_id', $canchaId)
+            ->whereDate('reservacion_date', $fecha)
+            ->get(['hora_inicio', 'hora_final']);
 
+        return response()->json($reservas);
+    }
     
 
     

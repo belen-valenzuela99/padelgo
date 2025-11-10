@@ -15,29 +15,33 @@
   <div class="card-body p-0">
     <table class="table mb-0 align-middle">
       <tbody>
-        <tr>
-          <th class="bg-light text-end w-25">Canchas</th>
-          <td>{{ $reservacion->cancha_id }}</td>
+    <tr>
+          <th class="bg-light text-end w-25">Usuario</th>
+          <td>{{ $reservacion->user->name ?? 'Desconocido' }}</td>
         </tr>
         <tr>
-          <th class="bg-light text-end">Fecha de Reservacion</th>
-          <td>{{ $reservacion->reservacion_date }}</td>
+          <th class="bg-light text-end">Cancha</th>
+          <td>{{ $reservacion->cancha->nombre ?? 'Sin cancha' }}</td>
+        </tr>
+        <tr>
+          <th class="bg-light text-end">Fecha de Reservación</th>
+          <td>{{ \Carbon\Carbon::parse($reservacion->reservacion_date)->format('d/m/Y') }}</td>
         </tr>
         <tr>
           <th class="bg-light text-end">Hora de Inicio</th>
-          <td>{{ $reservacion->hora_inicio }}</td>
+          <td>{{ \Carbon\Carbon::parse($reservacion->hora_inicio)->format('H:i') }}</td>
         </tr>
         <tr>
-          <th class="bg-light text-end">Hora de Finalizacion</th>
-          <td>{{ $reservacion->hora_final }}</td>
+          <th class="bg-light text-end">Hora de Finalización</th>
+          <td>{{ \Carbon\Carbon::parse($reservacion->hora_final)->format('H:i') }}</td>
         </tr>
         <tr>
           <th class="bg-light text-end">Tipo de Reserva</th>
-          <td>{{ $reservacion->id_tipo_reservacion }}</td>
+          <td>{{ $reservacion->tipoReservacion->franja_horaria ?? 'N/A' }} hora(s)</td>
         </tr>
         <tr>
           <th class="bg-light text-end">Estado</th>
-          <td>{{ $reservacion->status }}</td>
+          <td>{{ ucfirst($reservacion->status) }}</td>
         </tr>
       </tbody>
     </table>
