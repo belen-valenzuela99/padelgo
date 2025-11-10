@@ -7,6 +7,9 @@ use App\Models\Canchas;
 use App\Models\Reservacion;
 use App\Models\TipoReservacion;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
+use App\Models\User;
+
 
 
 class FrontendController extends Controller
@@ -32,12 +35,55 @@ class FrontendController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function confirmacionReserva($id)
+
     {
+        $user = auth()->user();
+        $cancha = Canchas::findOrFail($id);
+        $tipos = TipoReservacion::all();
+        return view('frontend.confirmacionReserva', compact('user', 'cancha', 'tipos'));
 
         }
         
+    
+    public function registrarReservacion(Request $request)
+{
+        $user = auth()->user();
+        //dd($user);
+   // if (!$user || $user->role !== "jugador") {
+            //return redirect('/login')->with('error', 'Solo los clientes pueden comprar entradas.');
+        //}
 
+
+    $request->validate([
+        'fecha' => 'required|date',
+        'hora' => 'required',
+        'cancha_id' => 'required|exists:canchas,id',
+        'id_tipo_reservacion' => 'required|integer',
+        'status' => 'nullable|in:programado,cancelado,turno perdido,turno completado',
+    ]);
+
+    $fechaReserva = Carbon::parse($request->fecha)->format('Y-m-d');
+    $horaInicio = Carbon::parse($request->hora)->format('H:i:s');
+    $id_tipo_reservacion = $request->id_tipo_reservacion;
+    
+    $duracion = TipoReservacion::find($request->id_tipo_reservacion);
+    $contenido_duracion = (int) $duracion->franja_horaria;
+
+    $horaFinal = Carbon::parse($horaInicio)->addHours($contenido_duracion)->format('H:i:s');
+
+    $reservacion = Reservacion::create([
+        'user_id' => $user->id,
+        'cancha_id' => $request->cancha_id,
+        'id_tipo_reservacion' => $request->id_tipo_reservacion,
+        'reservacion_date' => $fechaReserva,
+        'hora_inicio' => $horaInicio,
+        'hora_final' => $horaFinal,
+        'status' => $request->status ?? 'programado',
+    ]);
+
+    return view('frontend.reservaTicket', compact('reservacion'))->with('success', 'Reservación creada correctamente.');
+}
 
     
 

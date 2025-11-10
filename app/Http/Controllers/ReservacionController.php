@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Reservacion;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
+use App\Models\Canchas;
+use App\Models\TipoReservacion;
 
 class ReservacionController extends Controller
 {
@@ -12,8 +15,8 @@ class ReservacionController extends Controller
      */
     public function index()
     {
-        $categorias = Categoria::all();
-         return view('admin.categorias.index', compact('categorias'));
+        $reservacions = Reservacion::all();
+         return view('admin.reservacions.index', compact('reservacions'));
     }
 
     /**
@@ -21,7 +24,9 @@ class ReservacionController extends Controller
      */
     public function create()
     {
-        return view('admin.categorias.create');
+         $canchas=Canchas::all();
+        $tipos = TipoReservacion::all();
+        return view('admin.reservacions.create', compact('canchas', 'tipos'));
     }
 
     /**
@@ -72,13 +77,17 @@ class ReservacionController extends Controller
      */
     public function edit(Reservacion $reservacion)
     {
-         return view('admin.categorias.edit', compact('categoria'));
-    }
+    $canchas = Canchas::all();
+    $tipos = TipoReservacion::all();
+
+    return view('admin.reservacions.edit', compact('reservacion', 'canchas', 'tipos'));
+}
+
 
     /**
      * Update the specified resource in storage.
      */
-   public function update(Request $request, $id)
+    public function update(Request $request, $id)
 {
     $reservacion = Reservacion::findOrFail($id);
 
@@ -95,8 +104,8 @@ class ReservacionController extends Controller
     
     $duracion = TipoReservacion::find($request->id_tipo_reservacion);
     $contenido_duracion = (int) $duracion->franja_horaria;
-
     $horaFinal = Carbon::parse($horaInicio)->addHours($contenido_duracion)->format('H:i:s');
+    
     $reservacion->update([
         'cancha_id' => $request->cancha_id,
         'id_tipo_reservacion' => $request->id_tipo_reservacion,
@@ -114,7 +123,7 @@ class ReservacionController extends Controller
      */
     public function destroy(Reservacion $reservacion)
     {
-         $categoria->delete();
-        return redirect()->route('categorias.index')->with('success', 'Categoría eliminada.');
+         $reservacion->delete();
+         return redirect()->route('reservacions.index')->with('success', 'Reservacion eliminada.');
     }
 }

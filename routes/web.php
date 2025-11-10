@@ -45,6 +45,9 @@ Route::middleware(['auth', 'role:jugador'])->prefix('jugador')->group(function (
     Route::get('/dashboard', function () {
         return view('jugador.dashboard');
     })->name('jugador.dashboard');
+
+    Route::post('/reservacion-ticket', [FrontendController::class, 'registrarReservacion'])->name('reservar.store');
+    
 });
 
 // ================== PERFIL ==================
@@ -58,6 +61,7 @@ Route::middleware('auth')->group(function () {
 
 Route::get('/', [FrontendController::class, 'index'])->name('home');
 Route::get('/club/{id}', [FrontendController::class, 'clubDetalle'])->name('clubDetalle');
+Route::get('/reservar/{id}', [FrontendController::class, 'confirmacionReserva'])->name('confirmacionReserva');
 
 
 
