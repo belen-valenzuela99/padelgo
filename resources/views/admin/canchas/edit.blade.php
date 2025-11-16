@@ -24,6 +24,14 @@
         </div>
 
         <div class="mb-3">
+        <label for="descripcion" class="form-label">Descripción</label>
+        <textarea class="form-control" id="descripcion" name="descripcion" rows="3">
+            {{ old('descripcion', $cancha->descripcion) }}
+        </textarea>
+        </div>
+
+
+        <div class="mb-3">
             <label for="id_club" class="form-label">Club asociado</label>
             <select class="form-select" id="id_club" name="id_club" required>
                 <option value="">Seleccionar club...</option>

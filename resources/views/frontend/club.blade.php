@@ -16,6 +16,7 @@
                 <div class="card" style="width: 18rem;">
                 <div class="card-body">
                     <h5 class="card-title">{{ $cancha->nombre }}</h5>
+                    <p class="card-text">{{ $cancha->descripcion }}</p>
                     <a href="{{route('confirmacionReserva', $cancha->id)}}" class="btn btn-primary">Ver Horas disponibles</a>
                 </div>
                 </div>

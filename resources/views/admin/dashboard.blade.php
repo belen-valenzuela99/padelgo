@@ -4,5 +4,15 @@
 
 @section('content')
     <h1>Bienvenido al Dashboard Admin</h1>
-    <p>Aquí van tus estadísticas y enlaces importantes.</p>
+    <div>
+        
+            <div class="card" style="width: 18rem;">
+  <img src="{{ asset("img/admin.png") }}" class="card-img-top" alt="...">
+  <div class="card-body">
+    <h5 class="card-title">Clubes</h5>
+    <p class="card-text">Gestione los club y asignale un gestor</p>
+    <a href="{{ route('clubes.index') }}" class="btn btn-primary">Gestionar</a>
+  </div>
+</div>
+    </div>
 @endsection

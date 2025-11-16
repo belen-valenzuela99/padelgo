@@ -33,12 +33,12 @@
             @forelse($reservacions as $reservacion)
             <tr>
                 <td>{{ $reservacion->id }}</td>
-                <td>{{ $reservacion->user_id }}</td>
-                <td>{{ $reservacion->cancha_id }}</td>
-                <td>{{ $reservacion->reservacion_date }}</td>
-                <td>{{ $reservacion->hora_inicio }}</td>
-                <td>{{ $reservacion->hora_final }}</td>
-                <td>{{ $reservacion->id_tipo_reservacion }}</td>
+                <td>{{ $reservacion->user?->name }}</td>
+                <td>{{ $reservacion->cancha?->nombre }}</td>
+                <td>{{ \Carbon\Carbon::parse($reservacion->reservacion_date)->format('d-m-Y') }}</td>
+                <td>{{ \Carbon\Carbon::parse($reservacion->hora_inicio)->format('H:i') }}</td>
+                <td>{{ \Carbon\Carbon::parse($reservacion->hora_final)->format('H:i') }}</td>
+                <td>{{ $reservacion->tipoReservacion?->franja_horaria }} horas</td>
                 <td>{{ $reservacion->status }}</td>
                 <td>
                     <a href="{{ route('reservacions.edit', $reservacion->id) }}" class="btn btn-sm btn-warning">Editar</a>

@@ -12,7 +12,13 @@ class CanchasController extends Controller
     public function index()
     {
         
-        $canchas = Canchas::with('club')->get();
+        $user = auth()->user();
+        
+        $canchas = Canchas::with('club')
+        ->whereHas('club', function ($query) use ($user) {
+            $query->where('id_user', $user->id); // solo clubes del gestor
+        })
+        ->get();
         return view('admin.canchas.index', compact('canchas'));
 
     }
@@ -20,7 +26,9 @@ class CanchasController extends Controller
     
     public function create()
     {    
-        $clubes=Club::all();
+        $user = auth()->user();
+
+        $clubes = Club::where('id_user', $user->id)->get();
         return view('admin.canchas.create', compact('clubes'));
     }
 
@@ -29,6 +37,7 @@ class CanchasController extends Controller
     {
         $request->validate([
             'nombre' => 'required|string|max:255',
+            'descripcion' => 'required|string|max:255',
             'id_club' => 'required|exists:clubs,id',
 
         ]);
@@ -47,7 +56,9 @@ class CanchasController extends Controller
     public function edit(Canchas $cancha)
 
     {   
-        $clubes=Club::all();
+        $user = auth()->user();
+
+        $clubes = Club::where('id_user', $user->id)->get();
         return view('admin.canchas.edit', compact('cancha','clubes'));
     }
 
@@ -56,6 +67,7 @@ class CanchasController extends Controller
     {
         $request->validate([
             'nombre' => 'required|max:255',
+            'descripcion' => 'required|string|max:255',
             'id_club' => 'required|exists:clubs,id',
         ]);
 

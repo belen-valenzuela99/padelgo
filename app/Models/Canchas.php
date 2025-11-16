@@ -12,7 +12,7 @@ class Canchas extends Model
     // Campos que se pueden asignar masivamente
     protected $fillable = [
         'nombre',
-        'ubicacion',
+        'descripcion',
         'id_club',
     ];
 
