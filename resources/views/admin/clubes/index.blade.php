@@ -17,6 +17,8 @@
                 <th>ID</th>
                 <th>Imagen</th>
                 <th>Nombre</th>
+                <th>Gestor</th>
+                <th>Descripción</th>
                 <th>Direccion</th>
                 <th>Acciones</th>
             </tr>
@@ -34,6 +36,8 @@
                     @endif
                 </td>
                 <td>{{ $club->nombre }}</td>
+                <td>{{ $club->id_user }}</td>
+                <td>{{ $club->descripcion }}</td>
                 <td>{{ $club->direccion }}</td>
                 <td>
                     <a href="{{ route('clubes.edit', $club->id) }}" class="btn btn-sm btn-warning">Editar</a>

@@ -23,7 +23,26 @@
             <label for="nombre" class="form-label">Nombre</label>
             <input type="text" class="form-control" id="nombre" name="nombre" value="{{ old('nombre', $club->nombre) }}" required>
         </div>
+    <div class="mb-3">
+        <label for="descripcion" class="form-label">Descripción</label>
+        <textarea class="form-control" id="descripcion" name="descripcion" rows="3">
+            {{ old('descripcion', $club->descripcion) }}
+        </textarea>
+    </div>
 
+    <div class="mb-3">
+        <label for="id_user" class="form-label">Gestor del Club</label>
+        <select class="form-select" id="id_user" name="id_user">
+            <option value="">Sin asignar</option>
+
+            @foreach($gestores as $gestor)
+                <option value="{{ $gestor->id }}"
+                    {{ old('id_user', $club->id_user) == $gestor->id ? 'selected' : '' }}>
+                    {{ $gestor->name }}
+                </option>
+            @endforeach
+        </select>
+    </div>
         <div class="mb-3">
             <label for="direccion" class="form-label">Direccion</label>
             <textarea class="form-control" id="direccion" name="direccion" rows="3">{{ old('direccion', $club->direccion) }}</textarea>

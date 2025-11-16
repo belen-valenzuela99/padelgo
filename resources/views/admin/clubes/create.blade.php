@@ -22,6 +22,25 @@
         </div>
 
         <div class="mb-3">
+        <label for="descripcion" class="form-label">Descripción</label>
+        <textarea class="form-control" id="descripcion" name="descripcion" rows="3">{{ old('descripcion') }}</textarea>
+    </div>
+
+    <div class="mb-3">
+        <label for="id_user" class="form-label">Gestor del Club</label>
+        <select class="form-select" id="id_user" name="id_user">
+            <option value="">Sin asignar</option>
+
+            @foreach($gestores as $gestor)
+                <option value="{{ $gestor->id }}" 
+                    {{ old('id_user') == $gestor->id ? 'selected' : '' }}>
+                    {{ $gestor->name }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+
+        <div class="mb-3">
             <label for="direccion" class="form-label">Direccion</label>
             <textarea class="form-control" id="direccion" name="direccion" rows="3">{{ old('direccion') }}</textarea>
         </div>

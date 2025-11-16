@@ -31,11 +31,12 @@
                             <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
                         </li>
                         @if(Auth::user()->role === 'admin')
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('canchas.index') }}">Canchas</a>
-                            </li>
                              <li class="nav-item">
                                 <a class="nav-link" href="{{ route('clubes.index') }}">Clubes</a>
+                            </li>
+                        @elseif(Auth::user()->role === 'gestor')
+                             <li class="nav-item">
+                                <a class="nav-link" href="{{ route('canchas.index') }}">Canchas</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('tiporeservacion.index') }}">Tipo de Reservaciones</a>

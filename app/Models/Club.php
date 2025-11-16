@@ -11,6 +11,8 @@ class Club extends Model
 
     // Campos que se pueden asignar masivamente
     protected $fillable = [
+        'id_user',
+        'descripcion',
         'nombre',
         'img',
         'direccion',
@@ -20,6 +22,11 @@ class Club extends Model
     public function canchas()
     {
         return $this->hasMany(Canchas::class, "id_club");
+    }
+        
+     public function gestor()
+    {
+        return $this->belongsTo(User::class, 'id_user');
     }
         
 }

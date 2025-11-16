@@ -20,6 +20,9 @@ Route::get('/dashboard', function () {
     if ($user->role === 'admin') {
         return redirect()->route('admin.dashboard');
     }
+    elseif ($user->role === 'gestor') {
+        return redirect()->route('gestor.dashboard');
+    }
 
     return redirect()->route('jugador.dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -29,14 +32,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::get('/dashboard', function () {
         return view('admin.dashboard');
     })->name('admin.dashboard');
-    Route::resource('canchas', CanchasController::class);
     // Se agrega la ruta dentro del middleware del admin o del jugador, 
     Route::resource('clubes', ClubController::class)->parameters(['clubes' => 'club']);
-    Route::resource('tiporeservacion', TipoReservacionController::class);
-    Route::resource('reservacions', ReservacionController::class);
-
-
-
 
 });
 
@@ -48,6 +45,15 @@ Route::middleware(['auth', 'role:jugador'])->prefix('jugador')->group(function (
 
     Route::post('/reservacion-ticket', [FrontendController::class, 'registrarReservacion'])->name('reservar.store');
     
+});
+
+Route::middleware(['auth', 'role:gestor'])->prefix('gestor')->group(function () {
+     Route::get('/dashboard', function () {
+        return view('gestor.dashboard');
+    })->name('gestor.dashboard');
+    Route::resource('canchas', CanchasController::class);
+    Route::resource('tiporeservacion', TipoReservacionController::class);
+    Route::resource('reservacions', ReservacionController::class);
 });
 
 // ================== PERFIL ==================

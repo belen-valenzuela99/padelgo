@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Club;
 use Illuminate\Http\Request;
-
+use App\Models\User;
 class ClubController extends Controller
 {
     /**
@@ -20,7 +20,9 @@ class ClubController extends Controller
      */
     public function create()
     {
-        return view('admin.clubes.create');
+        $gestores = User::where('role', 'gestor')->get();
+
+    return view('admin.clubes.create', compact('gestores'));
     }
 
     /**
@@ -32,6 +34,8 @@ class ClubController extends Controller
             'nombre' => 'required|string|max:255',
             'direccion' => 'nullable|string',
             'img' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
+            'id_user' => 'nullable|exists:users,id',
+            'descrpcion' => 'nullable|string',
         ]);        
 
         $data = $request->all();
@@ -61,7 +65,9 @@ class ClubController extends Controller
 
     public function edit(Club $club)
     {
-        return view('admin.clubes.edit', compact('club'));
+        $gestores = User::where('role', 'gestor')->get();
+
+    return view('admin.clubes.edit', compact('club', 'gestores'));
     }
 
     /**
@@ -73,6 +79,8 @@ public function update(Request $request, Club $club)
             'nombre' => 'required|string|max:255',
             'direccion' => 'nullable|string',
             'img' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
+            'id_user' => 'nullable|exists:users,id',
+            'descrpcion' => 'nullable|string',
         ]);
         
 
