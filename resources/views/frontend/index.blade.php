@@ -12,7 +12,7 @@
             @forelse($clubes as $club)
 
                 <div class="card" style="width: 18rem;">
-                    <div class="contenedor_imagen">
+                    <div class="contenedor_imagen-card">
                         <img src="{{ asset($club->img) }}" class="card-img-top" alt="...">
                     </div>
                 <div class="card-body">
