@@ -31,23 +31,163 @@
 
 }
 
-/*-----------seccion de home----------*/
-.container_card{
+/* ===============================
+   SECCIÓN HOME – PADELGO (CSS)
+================================ */
+
+.container_card {
     display: flex;
     justify-content: space-around;
+    flex-wrap: wrap;      /* Hace responsivo el layout */
+    gap: 1.5rem;          /* Espacio entre cards */
 }
 
-.contenedor_imagen{
-    height: 200px;
+/* CARD */
+.card {
+    transition: all .4s ease-in-out;
+    border: none;
+    border-radius: 18px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.12);
+}
+
+.card:hover {
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.20);
+    transform: translateY(-4px);
+}
+
+/* CONTENIDO DE LA CARD */
+.card-body {
+    text-align: center;
+}
+
+.card-title {
+    font-weight: 600;
+    color: var(--pg-blue);
+}
+
+.card-text {
+    color: #555;
+}
+
+.contenedor_imagen-card {
+    height: 150px;        /* más pequeño */
     overflow: hidden;
+    border-radius: 10px 10px 0 0;
 }
 
-.card:hover{
-    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-    transition: all .4s ease-in-out;
-
+.contenedor_imagen-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;    /* mantiene calidad sin deformar */
 }
 
-.card{
-    transition: all .4s ease-in-out;
+
+/* BOTÓN */
+.btn-primary {
+    background-color: var(--pg-blue);
+    border-color: var(--pg-blue);
+    border-radius: 12px;
+}
+
+.btn-primary:hover {
+    background-color: var(--pg-green-dark);
+    border-color: var(--pg-green-dark);
+}
+
+/* CONTENEDOR DE IMAGEN DEL CLUB */
+.contenedor_imagen {
+    height: 340px;          /* AUMENTA EL ALTO */
+    width: 100%;
+    overflow: hidden;       
+    border-radius: 20px;    
+}
+
+.contenedor_imagen img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;      /* EVITA QUE SE DEFORME */
+    object-position: center;
+}
+
+
+
+/*-----------seccion de navar----------*/
+
+/* ================================
+   COLORES DEL LOGO PADELGO
+================================ */
+:root {
+    --pg-blue: #2457FF;        /* azul del círculo */
+    --pg-blue-dark: #121428;   /* fondo muy oscuro */   
+    --pg-green: #C6FF00;       /* verde pelota */
+    --pg-green-dark: #9CD300;  /* verde hover */
+    --pg-white: #FFFFFF;
+}
+
+/* ================================
+   NAVBAR
+================================ */
+.navbar {
+    background-color: var(--pg-blue-dark) !important;
+}
+
+.navbar-brand span,
+.navbar .nav-link {
+    color: var(--pg-white) !important;
+    font-weight: 500;
+}
+
+.navbar .nav-link:hover {
+    color: var(--pg-green) !important;
+}
+
+/* Botón del dropdown usuario */
+#userDropdown {
+    border-color: var(--pg-green);
+    color: var(--pg-green);
+}
+
+#userDropdown:hover {
+    background-color: var(--pg-green);
+    color: var(--pg-blue-dark);
+}
+
+/* ================================
+   BOTONES GENERALES
+================================ */
+.btn-primary {
+    background-color: var(--pg-blue);
+    border-color: var(--pg-blue);
+}
+
+.btn-primary:hover {
+    background-color: var(--pg-green-dark);
+    border-color: var(--pg-green-dark);
+}
+
+/* Botón secundario */
+.btn-success {
+    background-color: var(--pg-green);
+    border-color: var(--pg-green);
+    color: var(--pg-blue-dark);
+}
+
+.btn-success:hover {
+    background-color: var(--pg-green-dark);
+    border-color: var(--pg-green-dark);
+}
+
+/* Título principal minimalista */
+.titulo-minimal {
+    color: #110c57;                   /* gris muy oscuro, elegante */
+    font-weight: 700;
+    font-size: 2rem;
+    letter-spacing: -0.5px;
+}
+
+/* Subtítulo minimalista con toque PadelGO suave */
+.subtitulo-minimal {
+    color: rgba(36, 87, 255, 0.55);   /* azul PadelGO pero SUAVE y elegante */
+    font-weight: 400;
+    font-size: 1.1rem;
 }

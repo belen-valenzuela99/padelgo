@@ -13,11 +13,19 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
         <div class="container">
             @auth
-                <a class="navbar-brand" href="{{ route('home') }}">PadelGo</a>
+                <a class="navbar-brand d-flex align-items-center" href="{{ route('home') }}">
+                    <img src="{{ asset('img/frontend/logo.jpg') }}" alt="Logo" style="height: 40px;">
+                    <span class="ms-2">PadelGo</span>
+                </a>
+
             
             @endauth
             @guest
-                <a class="navbar-brand" href="#">PadelGo</a>
+                <a class="navbar-brand d-flex align-items-center" href="{{ route('home') }}">
+                    <img src="{{ asset('img/frontend/logo.jpg') }}" alt="Logo" style="height: 40px;">
+                    <span class="ms-2">PadelGo</span>
+                </a>
+
 
             @endguest
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
