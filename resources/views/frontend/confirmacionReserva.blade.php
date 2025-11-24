@@ -147,12 +147,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const inputHora = document.getElementById("inputHora");
     const inputDuracion = document.getElementById("inputDuracion");
 
+    const selectorFecha = document.getElementById("selectorFecha");
+    const btnPrev = document.getElementById("prevDay");
+    const btnNext = document.getElementById("nextDay");
+    const fechaActualTexto = document.getElementById("fechaActual");
+
     inputFecha.value = fechaActual.value;
 
-    // variable global dentro del script para poder consultarla al abrir modal
     let ocupadas = [];
 
     cargarHorarios();
+    actualizarBotonPrev(); // activar lógica al inicio
 
     // ---- CARGAR HORAS OCUPADAS ----
     async function cargarHorarios() {
@@ -160,6 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         let fecha = fechaActual.value;
         let resp = await fetch(`/horas-ocupadas/${canchaId}/${fecha}`);
+
         if (!resp.ok) {
             ocupadas = [];
         } else {
@@ -177,9 +183,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         horas.forEach(hora => {
             let ocupado = ocupadasArr.some(res =>
-                // si la hora (inicio) está dentro de un intervalo ocupado
-                timeToMinutes(hora + ":00") >= timeToMinutes(res.hora_inicio)
-                && timeToMinutes(hora + ":00") < timeToMinutes(res.hora_final)
+                timeToMinutes(hora + ":00") >= timeToMinutes(res.hora_inicio) &&
+                timeToMinutes(hora + ":00") < timeToMinutes(res.hora_final)
             );
 
             let box = document.createElement("div");
@@ -204,25 +209,20 @@ document.addEventListener("DOMContentLoaded", () => {
         return arr;
     }
 
-    // Helper: convierte "HH:MM:SS" o "HH:MM" a minutos desde la medianoche
     function timeToMinutes(t) {
         const parts = t.split(':').map(Number);
-        const h = parts[0] || 0;
-        const m = parts[1] || 0;
-        return h * 60 + m;
+        return (parts[0] * 60) + (parts[1] || 0);
     }
 
-    // suma cantidad (horas) a una hora "HH:MM" y devuelve "HH:MM:SS"
     function sumarHorasAMinutos(hora, cantidadHoras) {
         const [h, m] = hora.split(':').map(Number);
         const totalMin = h * 60 + m + cantidadHoras * 60;
         const nh = Math.floor((totalMin % (24 * 60)) / 60);
         const nm = totalMin % 60;
-        return String(nh).padStart(2,'0') + ":" + String(nm).padStart(2,'0') + ":00";
+        return `${String(nh).padStart(2,'0')}:${String(nm).padStart(2,'0')}:00`;
     }
 
     // ---- MODAL ----
-    // Al abrir el modal, además de posicionarlo, deshabilitamos las duraciones que solapan
     function abrirModal(ev, hora) {
         inputHora.value = hora;
 
@@ -231,28 +231,23 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.style.top = rect.bottom + 6 + "px";
         modal.style.display = "block";
 
-        // Habilitar todas primero
         Array.from(duracionSelect.options).forEach(opt => {
             opt.disabled = false;
             opt.style.color = "";
             opt.style.backgroundColor = "";
         });
 
-        // Para cada opción de duración (salteamos el primer option que es placeholder)
         const opciones = Array.from(duracionSelect.options).slice(1);
         opciones.forEach(opt => {
             const durHoras = parseInt(opt.dataset.duracion || "0", 10);
-            if (!durHoras || durHoras <= 0) return;
+            if (!durHoras) return;
 
-            // calcular inicio y fin en minutos
             const inicioMin = timeToMinutes(hora + ":00");
             const finMin = inicioMin + durHoras * 60;
 
-            // si existe alguna reserva ocupada que solape => deshabilitar
             const solapa = ocupadas.some(res => {
                 const resInicio = timeToMinutes(res.hora_inicio);
                 const resFin = timeToMinutes(res.hora_final);
-                // overlap check: start < resFin && end > resInicio
                 return (inicioMin < resFin) && (finMin > resInicio);
             });
 
@@ -260,21 +255,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 opt.disabled = true;
                 opt.style.color = "#999";
                 opt.style.backgroundColor = "#f8f9fa";
-            } else {
-                opt.disabled = false;
-                opt.style.color = "";
-                opt.style.backgroundColor = "";
             }
         });
 
-        // limpiar selección previa
         duracionSelect.value = "";
         inputDuracion.value = "";
     }
 
     cerrarModal.onclick = () => modal.style.display = "none";
 
-    // Al seleccionar una duración válida, guardamos y cerramos modal
     duracionSelect.onchange = () => {
         let sel = duracionSelect.value;
         if (sel) {
@@ -284,32 +273,62 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // ---- CAMBIO DE FECHA ----
-    document.getElementById("prevDay").onclick = () => cambiarDia(-1);
-    document.getElementById("nextDay").onclick = () => cambiarDia(1);
+    btnPrev.onclick = () => cambiarDia(-1);
+    btnNext.onclick = () => cambiarDia(1);
+
+    function crearFechaLocal(str) {
+        const [y, m, d] = str.split("-").map(Number);
+        return new Date(y, m - 1, d); // ← esto crea fecha LOCAL
+    }
 
     function cambiarDia(d) {
-        let f = new Date(fechaActual.value);
+        let f = crearFechaLocal(fechaActual.value);
         f.setDate(f.getDate() + d);
-        let nueva = f.toISOString().split("T")[0];
+
+        const hoy = new Date();
+        hoy.setHours(0,0,0,0);
+
+        if (d === -1 && f < hoy) return;
+
+        let nueva = f.toLocaleDateString("en-CA");
         window.location.href = `?fecha=${nueva}`;
     }
 
-    // --- Selector de Fecha ---
-    const selectorFecha = document.getElementById("selectorFecha");
-    const fechaActualTexto = document.getElementById("fechaActual");
 
-    // Cuando se elige una fecha manualmente
+
+    // ---- CONTROL VISUAL DE BOTÓN "<" ----
+    function actualizarBotonPrev() {
+        const hoy = new Date();
+        hoy.setHours(0,0,0,0);
+
+        const f = crearFechaLocal(fechaActual.value);
+        f.setHours(0,0,0,0);
+        
+        if (f <= hoy) {
+            btnPrev.disabled = true;
+            btnPrev.classList.add("opacity-50");
+            btnPrev.style.cursor = "not-allowed";
+        } else {
+            btnPrev.disabled = false;
+            btnPrev.classList.remove("opacity-50");
+            btnPrev.style.cursor = "pointer";
+        }
+    }
+
+
+    actualizarBotonPrev();
+
+    // --- Selector de Fecha ---
     selectorFecha.addEventListener("change", () => {
         if (!selectorFecha.value) return;
 
-       
-
-        // Redirigir para recargar horarios
         window.location.href = `?fecha=${selectorFecha.value}`;
     });
 
+
 });
 </script>
+
 
 
 @endsection
