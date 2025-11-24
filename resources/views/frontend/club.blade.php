@@ -8,6 +8,7 @@
     <h1 class="text-2xl font-bold mb-4">Reserva tu cancha</h1>
     <div>
         <p>Canchas Disponibles</p>
+        <div>{{ $club->descripcion }}</div>
     </div>
         <div class="container_card">
 

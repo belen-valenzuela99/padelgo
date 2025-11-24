@@ -9,9 +9,8 @@ use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\TipoReservacionController;
 use App\Http\Controllers\ReservacionController;
 
-//Route::get('/', function () {
-    //return view('welcome');
-//});
+Route::get('/reservaPrueba', [ReservaController::class, 'index'])
+     ->name('reserva.index');
 
 // Redirección dinámica según el rol del usuario
 Route::get('/dashboard', function () {

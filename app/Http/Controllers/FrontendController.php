@@ -35,15 +35,29 @@ class FrontendController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function confirmacionReserva($id)
-
+    public function confirmacionReserva($id, Request $request)
     {
         $user = auth()->user();
         $cancha = Canchas::findOrFail($id);
         $tipos = TipoReservacion::all();
-        return view('frontend.confirmacionReserva', compact('user', 'cancha', 'tipos'));
+        $club = $cancha->club;
 
+        // Fecha seleccionada o día de hoy
+        $fecha = $request->query('fecha', Carbon::today()->toDateString());
+
+        // Generar horas desde 8am a 23pm
+        $inicio = Carbon::createFromTime(8, 0);
+        $fin = Carbon::createFromTime(23, 0);
+
+        $horas = [];
+        for ($h = $inicio->copy(); $h->lte($fin); $h->addHour()) {
+            $horas[] = $h->format('H:i');
         }
+
+        return view('frontend.confirmacionReserva', compact(
+            'user', 'cancha', 'tipos', 'club', 'fecha', 'horas'
+        ));
+    }
         
     
     public function registrarReservacion(Request $request)
