@@ -15,7 +15,13 @@ class ReservacionController extends Controller
      */
     public function index()
     {
-        $reservacions = Reservacion::all();
+       $userId = auth()->id();
+
+        // Filtrar reservaciones donde:
+        // reservacion.cancha.club.id_user == gestor (usuario logueado)
+        $reservacions = Reservacion::whereHas('cancha.club', function ($q) use ($userId) {
+            $q->where('id_user', $userId);
+        })->get();
          return view('admin.reservacions.index', compact('reservacions'));
     }
 
@@ -24,7 +30,12 @@ class ReservacionController extends Controller
      */
     public function create()
     {
-         $canchas=Canchas::all();
+        $userId = auth()->id();
+
+        // Traer solo las canchas del club cuyo gestor es el usuario logueado
+        $canchas = Canchas::whereHas('club', function ($q) use ($userId) {
+            $q->where('id_user', $userId);
+        })->get();
         $tipos = TipoReservacion::all();
         return view('admin.reservacions.create', compact('canchas', 'tipos'));
     }

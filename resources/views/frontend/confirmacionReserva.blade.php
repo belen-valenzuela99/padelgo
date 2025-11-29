@@ -58,6 +58,21 @@
     #miniModal select {
         font-size: 13px;
     }
+    .hora-seleccionada {
+        background-color: #2ecc71 !important; /* verde */
+        color: white !important;
+        border: 2px solid #27ae60;
+    }
+    .hora-pasada {
+        background: #e0e0e0;
+        color: #777;
+        cursor: not-allowed !important;
+    }
+    .hora-pasada.hora-box:hover {
+        background: #e0e0e0;
+        color: #777;
+    }
+
 </style>
 
 <div class="container py-3">
@@ -182,25 +197,113 @@ document.addEventListener("DOMContentLoaded", () => {
         const horas = generarHoras(8, 23);
 
         horas.forEach(hora => {
-            let ocupado = ocupadasArr.some(res =>
-                timeToMinutes(hora + ":00") >= timeToMinutes(res.hora_inicio) &&
-                timeToMinutes(hora + ":00") < timeToMinutes(res.hora_final)
-            );
+            const slotMin = timeToMinutes(hora); // "HH:00"
 
+            // ---- 1) Detectar horas ocupadas (tu regla con medianoche) ----
+            let ocupado = ocupadasArr.some(res => {
+                const [resInicio, resFin] = intervalMinutes(res.hora_inicio, res.hora_final);
+
+                const slotMinNormalized = 
+                    (slotMin < resInicio && resFin > 1440) ? slotMin + 1440 : slotMin;
+
+                return (slotMinNormalized >= resInicio) && (slotMinNormalized < resFin);
+            });
+
+            // ---- 2) Determinar si es fecha actual, pasada o futura ----
+            const hoy = new Date();
+            const hoySinHora = new Date();
+            hoySinHora.setHours(0,0,0,0);
+
+            const fechaSel = crearFechaLocal(fechaActual.value);
+            fechaSel.setHours(0,0,0,0);
+
+            const esHoy = fechaSel.getTime() === hoySinHora.getTime();
+            const esFechaPasada = fechaSel.getTime() < hoySinHora.getTime();
+
+
+            // ---- 3) Regla de horas pasadas ----
+            let bloqueable = true;
+            let isPast = false;
+
+            if (esHoy) {
+                const nowMin = hoy.getHours() * 60 + hoy.getMinutes(); 
+
+                // Si la hora ya terminó completamente → pasada
+                if (slotMin < nowMin - 0) {
+                    isPast = true;
+                }
+
+                // Si es la hora actual → mirar min restantes
+                const currentHourStart = hoy.getHours() * 60;
+                const currentHourEnd = currentHourStart + 60;
+
+                const isCurrentHour = slotMin === currentHourStart;
+
+                if (isCurrentHour) {
+                    const minutosTranscurridos = nowMin - currentHourStart;
+                    const minutosRestantes = 60 - minutosTranscurridos;
+
+                    // Menos de 30 minutos → bloquear
+                    if (minutosRestantes < 30) {
+                        isPast = true;
+                    } else {
+                        // Aquí sí puede seleccionarse siempre que NO esté ocupado
+                        bloqueable = !ocupado;
+                    }
+                } else if (isPast) {
+                    bloqueable = false;
+                }
+            }
+            // ---- 3) Regla para fechas pasadas completas ----
+            if (esFechaPasada) {
+                // Todo es pasado EXCEPTO lo que estaba ocupado (rojo)
+                let box = document.createElement("div");
+                box.className = "hora-box";
+                box.innerText = hora;
+                box.dataset.hora = hora;
+
+                if (ocupado) {
+                    box.classList.add("hora-ocupada"); // rojo
+                } else {
+                    box.classList.add("hora-pasada"); // gris
+                }
+
+                contenedorHorarios.appendChild(box);
+                return; // <- IMPORTANTE, no seguir procesando más lógica
+            }
+
+            // ---- 4) Crear el box ----
             let box = document.createElement("div");
             box.className = "hora-box";
             box.innerText = hora;
+            box.dataset.hora = hora;
 
+            // ---- 5) Aplicar clases finales ----
             if (ocupado) {
-                box.classList.add("hora-ocupada");
-            } else {
+                box.classList.add("hora-ocupada"); // rojo
+            } else if (isPast && esHoy) {
+                box.classList.add("hora-pasada");  // gris
+            } else if (bloqueable) {
                 box.onclick = (e) => abrirModal(e, hora);
             }
 
             contenedorHorarios.appendChild(box);
         });
-    }
 
+    }
+    // funcion auxiliar para que funcione la hora 23
+    function intervalMinutes(horaInicioStr, horaFinStr) {
+        const start = timeToMinutes(horaInicioStr.replace(/:00$/, '')); // acepta "23:00" o "23:00:00"
+        const finRaw = timeToMinutes(horaFinStr.replace(/:00$/, ''));
+        let fin = finRaw;
+
+        // Si fin es igual o menor que start interpretamos que cruza medianoche
+        if (fin <= start) {
+            fin = fin + 1440; // lo ponemos en el día siguiente
+        }
+
+        return [start, fin];
+    }
     function generarHoras(inicio, fin) {
         let arr = [];
         for (let h = inicio; h <= fin; h++) {
@@ -245,18 +348,42 @@ document.addEventListener("DOMContentLoaded", () => {
             const inicioMin = timeToMinutes(hora + ":00");
             const finMin = inicioMin + durHoras * 60;
 
+            // ---- 1) REGLA DE NO PASAR DE 00:00 ----
+            // finMin no debe ser mayor a 1440 (24 * 60)
+            if (finMin > 1440) {
+                opt.disabled = true;
+                opt.style.color = "#999";
+                opt.style.backgroundColor = "#f8f9fa";
+                return;
+            }
+
+            // ---- 2) REGLA DE SOLAPAMIENTO ----
             const solapa = ocupadas.some(res => {
-                const resInicio = timeToMinutes(res.hora_inicio);
-                const resFin = timeToMinutes(res.hora_final);
-                return (inicioMin < resFin) && (finMin > resInicio);
+                const [resInicio, resFin] = intervalMinutes(res.hora_inicio, res.hora_final);
+
+                // inicio y fin del candidato elegido
+                // inicioMin ya lo tienes
+                // finMin ya lo calculaste (inicioMin + durHoras * 60)
+
+                // si la reserva cruza medianoche también hay que considerar el caso
+                // si el inicioMin está antes de resInicio pero la reserva cruza, lo normalizamos
+                const slotStart = inicioMin;
+                const slotStartNorm = (slotStart < resInicio && resFin > 1440) ? slotStart + 1440 : slotStart;
+                const slotEndNorm = (finMin <= resInicio && resFin > 1440) ? finMin + 1440 : finMin;
+
+                // comprobación clásica de solapamiento en minutos normalizados
+                return (slotStartNorm < resFin) && (slotEndNorm > resInicio);
             });
+
 
             if (solapa) {
                 opt.disabled = true;
                 opt.style.color = "#999";
                 opt.style.backgroundColor = "#f8f9fa";
+                return;
             }
         });
+
 
         duracionSelect.value = "";
         inputDuracion.value = "";
@@ -266,11 +393,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     duracionSelect.onchange = () => {
         let sel = duracionSelect.value;
+
         if (sel) {
             inputDuracion.value = sel;
+
+            const dur = parseInt(sel, 10);
+
+            // colorear horas elegidas
+            marcarHorasSeleccionadas(inputHora.value, dur);
+
             modal.style.display = "none";
         }
     };
+
 
     // ---- CAMBIO DE FECHA ----
     btnPrev.onclick = () => cambiarDia(-1);
@@ -324,6 +459,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
         window.location.href = `?fecha=${selectorFecha.value}`;
     });
+
+    function marcarHorasSeleccionadas(horaInicio, duracionHoras) {
+        // limpiar colores previos
+        document.querySelectorAll(".hora-box").forEach(b => {
+            b.classList.remove("hora-seleccionada");
+        });
+
+        const inicioMin = timeToMinutes(horaInicio + ":00");
+
+        for (let i = 0; i < duracionHoras; i++) {
+            const currentMin = inicioMin + (i * 60);
+            const h = Math.floor(currentMin / 60);
+
+            const horaStr = String(h).padStart(2, "0") + ":00";
+
+            const box = document.querySelector(`.hora-box[data-hora='${horaStr}']`);
+            if (box) box.classList.add("hora-seleccionada");
+        }
+    }
 
 
 });

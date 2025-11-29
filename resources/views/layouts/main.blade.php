@@ -38,6 +38,9 @@
                     @auth
                             <a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a>
                         </li>
+                        <li class="nav-item">
+                                <a class="nav-link" href="{{ route('jugador.reservaciones.index') }}">Reservaciones</a>
+                            </li>
                         @if(Auth::user()->role === 'admin')
                              <li class="nav-item">
                                 <a class="nav-link" href="{{ route('clubes.index') }}">Clubes</a>

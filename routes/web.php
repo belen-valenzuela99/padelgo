@@ -41,7 +41,10 @@ Route::middleware(['auth', 'role:jugador'])->prefix('jugador')->group(function (
     Route::get('/dashboard', function () {
         return view('jugador.dashboard');
     })->name('jugador.dashboard');
-
+    // Listado de reservas del jugador
+    Route::get('/reservaciones', [FrontendController::class, 'misReservaciones'])
+        ->name('jugador.reservaciones.index');
+        
     Route::post('/reservacion-ticket', [FrontendController::class, 'registrarReservacion'])->name('reservar.store');
     
 });

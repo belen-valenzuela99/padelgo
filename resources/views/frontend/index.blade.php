@@ -19,7 +19,7 @@
                     <h5 class="card-title">{{ $club->nombre }}</h5>
                     <p class="card-text">{{ $club->direccion }}</p>
                     <p class="card-text">{{ $club->descripcion }}</p>
-                    <a href="{{ route('clubDetalle', $club->id) }}" class="btn btn-primary">Ver Canchas</a>
+                    <a href="{{ route('clubDetalle', $club->id) }}" class="btn btn-primary">Ver Club</a>
                 </div>
                 </div>
             @empty

@@ -106,6 +106,18 @@ class FrontendController extends Controller
         return response()->json($reservas);
     }
     
+    public function misReservaciones()
+{
+    $userId = auth()->id();
+
+    // Reservaciones solo del jugador autenticado
+    $reservaciones = Reservacion::with(['cancha', 'tipoReservacion'])
+        ->where('user_id', $userId)
+        ->orderBy('reservacion_date', 'desc')
+        ->get();
+
+    return view('jugador.reservaciones.index', compact('reservaciones'));
+}
 
     
     /**
