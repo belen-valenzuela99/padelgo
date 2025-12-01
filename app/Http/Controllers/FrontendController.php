@@ -60,44 +60,32 @@ class FrontendController extends Controller
     }
         
     
-    public function registrarReservacion(Request $request)
+   public function registrarReservacion(Request $request)
 {
-        $user = auth()->user();
-        //dd($user);
-   // if (!$user || $user->role !== "jugador") {
-            //return redirect('/login')->with('error', 'Solo los clientes pueden comprar entradas.');
-        //}
-
+    $user = auth()->user();
 
     $request->validate([
         'fecha' => 'required|date',
-        'hora' => 'required',
+        'hora_inicio' => 'required',
+        'hora_final' => 'required',
         'cancha_id' => 'required|exists:canchas,id',
         'id_tipo_reservacion' => 'required|integer',
-        'status' => 'nullable|in:programado,cancelado,turno perdido,turno completado',
     ]);
-
-    $fechaReserva = Carbon::parse($request->fecha)->format('Y-m-d');
-    $horaInicio = Carbon::parse($request->hora)->format('H:i:s');
-    $id_tipo_reservacion = $request->id_tipo_reservacion;
-    
-    $duracion = TipoReservacion::find($request->id_tipo_reservacion);
-    $contenido_duracion = (int) $duracion->franja_horaria;
-
-    $horaFinal = Carbon::parse($horaInicio)->addHours($contenido_duracion)->format('H:i:s');
 
     $reservacion = Reservacion::create([
         'user_id' => $user->id,
         'cancha_id' => $request->cancha_id,
         'id_tipo_reservacion' => $request->id_tipo_reservacion,
-        'reservacion_date' => $fechaReserva,
-        'hora_inicio' => $horaInicio,
-        'hora_final' => $horaFinal,
-        'status' => $request->status ?? 'programado',
+        'reservacion_date' => $request->fecha,
+        'hora_inicio' => $request->hora_inicio,
+        'hora_final' => $request->hora_final,
+        'status' => 'programado',
     ]);
-    $reservacion->load(['user', 'cancha', 'tipoReservacion']);
-    return view('frontend.reservaTicket', compact('reservacion'))->with('success', 'Reservación creada correctamente.');
+
+    return view('frontend.reservaTicket', compact('reservacion'))
+        ->with('success', 'Reservación creada correctamente.');
 }
+
  public function horasOcupadas($canchaId,  $fecha){
         $reservas = Reservacion::where('cancha_id', $canchaId)
             ->whereDate('reservacion_date', $fecha)
@@ -118,6 +106,37 @@ class FrontendController extends Controller
 
     return view('jugador.reservaciones.index', compact('reservaciones'));
 }
+public function prepararReservacion(Request $request)
+{
+    $request->validate([
+        'fecha' => 'required|date',
+        'hora' => 'required',
+        'cancha_id' => 'required|exists:canchas,id',
+        'id_tipo_reservacion' => 'required|integer',
+    ]);
+
+    $fechaReserva = Carbon::parse($request->fecha)->format('Y-m-d');
+    $horaInicio = Carbon::parse($request->hora)->format('H:i:s');
+
+    $duracion = TipoReservacion::find($request->id_tipo_reservacion);
+
+    $contenido_duracion = (int) $duracion->franja_horaria;
+    $horaFinal = Carbon::parse($horaInicio)->addHours($contenido_duracion)->format('H:i:s');
+
+    // Armamos un "objeto" temporal
+    $preReserva = (object)[
+        'fecha' => $fechaReserva,
+        'hora_inicio' => $horaInicio,
+        'hora_final' => $horaFinal,
+        'cancha' => Canchas::find($request->cancha_id),
+        'tipoReservacion' => $duracion,
+        'cancha_id' => $request->cancha_id,
+        'id_tipo_reservacion' => $request->id_tipo_reservacion,
+    ];
+
+    return view('frontend.confirmarCompra', compact('preReserva'));
+}
+
 
     
     /**

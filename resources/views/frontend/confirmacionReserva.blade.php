@@ -78,6 +78,7 @@
 <div class="container py-3">
 
     <h4 class="fw-bold">{{ $club->nombre }} - {{ $cancha->nombre }}</h4>
+    <p>{{ $cancha->descripcion }}</p>
     <p class="text-muted" style="font-size: 13px;">Dirección: {{ $club->direccion }}</p>
 
     {{-- FECHA --}}
@@ -130,18 +131,19 @@
     </div>
 
     {{-- FORMULARIO REAL --}}
-    <form action="{{ route('reservar.store') }}" method="POST" id="formReserva" class="mt-3">
-        @csrf
-        <input type="hidden" name="cancha_id" value="{{ $cancha->id }}">
-        <input type="hidden" name="fecha" id="inputFecha">
-        <input type="hidden" name="hora" id="inputHora">
-        <input type="hidden" name="id_tipo_reservacion" id="inputDuracion">
-        <input type="hidden" name="status" value="programado">
+    <form action="{{ route('jugador.reservar.preparar') }}" method="POST" id="formReserva" class="mt-3">
+    @csrf
+    <input type="hidden" name="cancha_id" value="{{ $cancha->id }}">
+    <input type="hidden" name="fecha" id="inputFecha">
+    <input type="hidden" name="hora" id="inputHora">
+    <input type="hidden" name="id_tipo_reservacion" id="inputDuracion">
+    <input type="hidden" name="status" value="programado">
 
-        <button type="submit" id="btnSubmit" class="btn btn-primary btn-lg w-100">
-            Confirmar Reserva
-        </button>
-    </form>
+    <button type="submit" id="btnSubmit" class="btn btn-primary btn-lg w-100">
+        Confirmar Reserva
+    </button>
+</form>
+
 
 </div>
 

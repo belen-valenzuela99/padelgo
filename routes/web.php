@@ -45,8 +45,16 @@ Route::middleware(['auth', 'role:jugador'])->prefix('jugador')->group(function (
     Route::get('/reservaciones', [FrontendController::class, 'misReservaciones'])
         ->name('jugador.reservaciones.index');
         
-    Route::post('/reservacion-ticket', [FrontendController::class, 'registrarReservacion'])->name('reservar.store');
-    
+   // ================== ================== Route::post('/reservacion-ticket', [FrontendController::class, 'registrarReservacion'])->name('reservar.store');
+    Route::get('/confirmar-compra/{reservacion}', [FrontendController::class, 'confirmarCompra'])
+    ->name('jugador.reservar.confirmar');
+    Route::post('/pre-reservacion', [FrontendController::class, 'prepararReservacion'])
+    ->name('jugador.reservar.preparar');
+    Route::post('/reservacion-confirmada', [FrontendController::class, 'registrarReservacion'])
+    ->name('jugador.reservar.confirmada');
+
+
+
 });
 
 Route::middleware(['auth', 'role:gestor'])->prefix('gestor')->group(function () {
