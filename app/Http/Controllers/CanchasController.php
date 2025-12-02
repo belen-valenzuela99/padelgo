@@ -39,6 +39,7 @@ class CanchasController extends Controller
             'nombre' => 'required|string|max:255',
             'descripcion' => 'required|string|max:255',
             'id_club' => 'required|exists:clubs,id',
+            'duracion_maxima' => 'required|string|max:255',
 
         ]);
 
@@ -69,6 +70,7 @@ class CanchasController extends Controller
             'nombre' => 'required|max:255',
             'descripcion' => 'required|string|max:255',
             'id_club' => 'required|exists:clubs,id',
+            'duracion_maxima' => 'required|string|max:255',
         ]);
 
         $cancha->update($request->all());
@@ -83,4 +85,23 @@ class CanchasController extends Controller
         return redirect()->route('canchas.index')->with('success', 'Cancha eliminada.');
 
     }
+public function activar($id)
+{
+    $cancha = Canchas::findOrFail($id);
+    $cancha->is_active = true;
+    $cancha->save();
+
+    return back()->with('success', 'La cancha fue publicada.');
+}
+
+public function desactivar($id)
+{
+    $cancha = Canchas::findOrFail($id);
+    $cancha->is_active = false;
+    $cancha->save();
+
+    return back()->with('success', 'La cancha fue despublicada.');
+}
+
+
 }

@@ -18,6 +18,8 @@
                 <th>Nombre</th>
                 <th>Descripcion</th>
                 <th>Club</th>
+                <th>Hora Máxima de Reserva</th>
+                <th>Estado</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -27,20 +29,48 @@
                 <td>{{ $cancha->id }}</td>
                 <td>{{ $cancha->nombre }}</td>
                 <td>{{ $cancha->descripcion }}</td>
-                <td>{{ $cancha->club ? $cancha->club->nombre : "sin club" }}</td>
+                <td>{{ $cancha->club ? $cancha->club->nombre : "Sin club" }}</td>
+                <td>{{ $cancha->duracion_maxima }}</td>
+
+                <!-- ESTADO -->
+                <td>
+                    @if($cancha->is_active)
+                        <span class="badge bg-success">Publicado</span>
+                    @else
+                        <span class="badge bg-secondary">No Publicado</span>
+                    @endif
+                </td>
+
+                <!-- ACCIONES -->
                 <td>
                     <a href="{{ route('canchas.edit', $cancha->id) }}" class="btn btn-sm btn-warning">Editar</a>
 
-                    <form action="{{ route('canchas.destroy', $cancha->id) }}" method="POST" class="d-inline-block" onsubmit="return confirm('¿Estás seguro de eliminar esta cancha?');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
-                    </form>
+                    {{-- Botón Publicar / Despublicar --}}
+                    @if($cancha->is_active)
+                        <form action="{{ route('canchas.desactivar', $cancha->id) }}" 
+                            method="POST" class="d-inline">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="btn btn-sm btn-secondary">
+                                Despublicar
+                            </button>
+                        </form>
+                    @else
+                        <form action="{{ route('canchas.activar', $cancha->id) }}" 
+                            method="POST" class="d-inline">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="btn btn-sm btn-success">
+                                Publicar
+                            </button>
+                        </form>
+                    @endif
+
                 </td>
             </tr>
             @empty
             <tr>
-                <td colspan="4" class="text-center">No hay canchas registradas.</td>
+                <td colspan="7" class="text-center">No hay canchas registradas.</td>
             </tr>
             @endforelse
         </tbody>
