@@ -121,7 +121,7 @@
         <select id="duracionSelect" class="form-select form-select-sm mb-2">
             <option value="">Seleccione</option>
             @foreach ($tipos as $tipo)
-                <option value="{{ $tipo->id }}" data-duracion="{{ $tipo->franja_horaria }}">
+                <option value="{{ $tipo->franja_horaria }}" data-duracion="{{ $tipo->franja_horaria }}">
                     {{ $tipo->franja_horaria }} h - ${{ $tipo->precio }}
                 </option>
             @endforeach

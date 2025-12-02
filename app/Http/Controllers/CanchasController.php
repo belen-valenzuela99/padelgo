@@ -39,6 +39,7 @@ class CanchasController extends Controller
             'nombre' => 'required|string|max:255',
             'descripcion' => 'required|string|max:255',
             'id_club' => 'required|exists:clubs,id',
+            'duracion_maxima' => 'required|string|max:255',
 
         ]);
 
@@ -69,6 +70,7 @@ class CanchasController extends Controller
             'nombre' => 'required|max:255',
             'descripcion' => 'required|string|max:255',
             'id_club' => 'required|exists:clubs,id',
+            'duracion_maxima' => 'required|string|max:255',
         ]);
 
         $cancha->update($request->all());

@@ -14,6 +14,7 @@ class Canchas extends Model
         'nombre',
         'descripcion',
         'id_club',
+        'duracion_maxima',
     ];
 
     // Relación ejemplo: una categoría puede tener muchas partidas
