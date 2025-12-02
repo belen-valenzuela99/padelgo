@@ -35,31 +35,92 @@ class FrontendController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function confirmacionReserva($id, Request $request)
-    {
-        $user = auth()->user();
-        $cancha = Canchas::findOrFail($id);
-        $tipos = TipoReservacion::all();
-        $club = $cancha->club;
+public function confirmacionReserva($id, Request $request)
+{
+    $user = auth()->user();
+    $cancha = Canchas::findOrFail($id);
+    $club = $cancha->club;
 
-        // Fecha seleccionada o día de hoy
-        $fecha = $request->query('fecha', Carbon::today()->toDateString());
+    // Traer todas las franjas (ordenadas por hora_inicio)
+    $tipos = TipoReservacion::orderBy('hora_inicio', 'asc')->get();
 
-        // Generar horas desde 8am a 23pm
-        $inicio = Carbon::createFromTime(8, 0);
-        $fin = Carbon::createFromTime(23, 0);
+    if ($tipos->count() == 0) {
+        return back()->with('error', 'No hay tipos de reservación configurados.');
+    }
 
-        $horas = [];
-        for ($h = $inicio->copy(); $h->lte($fin); $h->addHour()) {
-            $horas[] = $h->format('H:i');
+    // --- FUNCION PARA NORMALIZAR HORAS ---
+    $normalizarHora = function ($hora) {
+
+    // Quitar basura
+    $hora = preg_replace('/[^0-9:]/', '', trim($hora));
+
+    // Dividir en partes
+    $partes = explode(':', $hora);
+
+    // Si viene "HH", "HH:mm" o "HH:mm:ss"
+    $h = $partes[0] ?? '00';
+    $m = $partes[1] ?? '00';
+
+    return sprintf('%02d:%02d', $h, $m);
+};
+
+
+
+    // --- TOMAR PRIMERA Y ULTIMA HORA DEL SISTEMA (ROBUSTO) ---
+
+    $primerTipo = $tipos->first();
+    $ultimoTipo = $tipos->last();
+
+    $horaInicio = $normalizarHora($primerTipo->hora_inicio);
+    $horaFin    = $normalizarHora($ultimoTipo->hora_fin);
+
+    $inicioSistema = Carbon::createFromFormat('H:i', $horaInicio);
+    $finSistema    = Carbon::createFromFormat('H:i', $horaFin);
+
+    // Fecha seleccionada (o hoy por defecto)
+    $fecha = $request->query('fecha', Carbon::today()->toDateString());
+
+    // Generar todas las horas según la primera y última franja
+    $horas = [];
+
+    for ($h = $inicioSistema->copy(); $h->lte($finSistema); $h->addHour()) {
+
+        $horaStr = $h->format('H:i');
+        $precioEncontrado = null;
+
+        // Buscar precio según tipo de franja
+        foreach ($tipos as $tipo) {
+
+            // NORMALIZAR TAMBIÉN DENTRO DEL LOOP (CLAVE)
+            $hInicioTipo = Carbon::createFromFormat('H:i', $normalizarHora($tipo->hora_inicio));
+            $hFinTipo    = Carbon::createFromFormat('H:i', $normalizarHora($tipo->hora_fin));
+
+            if ($h->gte($hInicioTipo) && $h->lt($hFinTipo)) {
+                $precioEncontrado = $tipo->precio;
+                break;
+            }
         }
 
-        return view('frontend.confirmacionReserva', compact(
-            'user', 'cancha', 'tipos', 'club', 'fecha', 'horas'
-        ));
+        $horas[] = [
+            'hora'   => $horaStr,
+            'precio' => $precioEncontrado
+        ];
     }
-        
-    
+
+
+    return view('frontend.confirmacionReserva', compact(
+        'user',
+        'cancha',
+        'tipos',
+        'club',
+        'fecha',
+        'horas',
+        'inicioSistema',
+        'finSistema'
+    ));
+
+}
+
    public function registrarReservacion(Request $request)
 {
     $user = auth()->user();

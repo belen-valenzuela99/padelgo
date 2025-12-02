@@ -12,7 +12,8 @@ class TipoReservacion extends Model
 
     // Campos que se pueden asignar masivamente
     protected $fillable = [
-        'franja_horaria',
+        'hora_inicio',
+        'hora_fin',
         'precio',
     ];
 
