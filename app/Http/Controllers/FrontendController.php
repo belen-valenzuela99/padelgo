@@ -60,7 +60,7 @@ class FrontendController extends Controller
     }
         
     
-   public function registrarReservacion(Request $request)
+public function registrarReservacion(Request $request)
 {
     $user = auth()->user();
 

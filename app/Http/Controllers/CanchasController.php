@@ -85,4 +85,23 @@ class CanchasController extends Controller
         return redirect()->route('canchas.index')->with('success', 'Cancha eliminada.');
 
     }
+public function activar($id)
+{
+    $cancha = Canchas::findOrFail($id);
+    $cancha->is_active = true;
+    $cancha->save();
+
+    return back()->with('success', 'La cancha fue publicada.');
+}
+
+public function desactivar($id)
+{
+    $cancha = Canchas::findOrFail($id);
+    $cancha->is_active = false;
+    $cancha->save();
+
+    return back()->with('success', 'La cancha fue despublicada.');
+}
+
+
 }

@@ -56,9 +56,16 @@ Route::middleware(['auth', 'role:jugador'])->prefix('jugador')->group(function (
 
 
 });
+Route::patch('/canchas/{id}/activar', [CanchasController::class, 'activar'])
+    ->name('canchas.activar');
+
+Route::patch('/canchas/{id}/desactivar', [CanchasController::class, 'desactivar'])
+    ->name('canchas.desactivar');
+
+
 
 Route::middleware(['auth', 'role:gestor'])->prefix('gestor')->group(function () {
-     Route::get('/dashboard', function () {
+    Route::get('/dashboard', function () {
         return view('gestor.dashboard');
     })->name('gestor.dashboard');
     Route::resource('canchas', CanchasController::class);
