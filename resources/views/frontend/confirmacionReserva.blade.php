@@ -130,13 +130,14 @@
         <h6 class="fw-bold mb-2" style="font-size: 13px;">Duración:</h6>
 
         <select id="duracionSelect" class="form-select form-select-sm mb-2">
-            <option value="">Seleccione</option>
-            @foreach ($tipos as $tipo)
-                <option value="{{ $tipo->id }}">
-                    {{ $tipo->hora_inicio }} - {{ $tipo->hora_fin }} h — ${{ $tipo->precio }}
-                </option>
+           <option value="">Seleccione</option>
 
-            @endforeach
+        @for ($i = 1; $i <= $cancha->duracion_maxima; $i++)
+            <option value="{{ $i }}">
+                {{ $i }} hora{{ $i > 1 ? 's' : '' }}
+            </option>
+        @endfor
+
         </select>
 
         <button id="cerrarModal" class="btn btn-danger btn-sm w-100">Cerrar</button>
