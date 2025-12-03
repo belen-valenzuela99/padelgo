@@ -31,17 +31,21 @@
 
                     <p class="mb-2"><strong>Hora Inicio:</strong> {{ $preReserva->hora_inicio }}</p>
                     <p class="mb-2"><strong>Hora Final:</strong> {{ $preReserva->hora_final }}</p>
-                    <p class="mb-2"><strong>Tipo de Reservación:</strong> {{ $preReserva->tipoReservacion->nombre }}</p>
 
-                    <p class="mb-3">
-                        <strong>Duración:</strong> {{ $preReserva->tipoReservacion->franja_horaria }} hora(s)
+                    <p class="mb-2">
+                        <strong>Duración:</strong> {{ $preReserva->duracion }} hora(s)
+                    </p>
+
+                    <p class="mb-2">
+                        <strong>Precio por hora:</strong> 
+                        ${{ number_format($preReserva->precio_por_hora, 0, ',', '.') }}
                     </p>
 
                     <hr>
 
                     <h4 class="text-success">
                         <strong>Total:</strong>
-                        ${{ number_format($preReserva->tipoReservacion->precio, 0, ',', '.') }}
+                            ${{ number_format($preReserva->total, 0, ',', '.') }}
                     </h4>
 
                 </div>
@@ -66,12 +70,15 @@
                         <input type="hidden" name="hora_inicio" value="{{ $preReserva->hora_inicio }}">
                         <input type="hidden" name="hora_final" value="{{ $preReserva->hora_final }}">
                         <input type="hidden" name="cancha_id" value="{{ $preReserva->cancha_id }}">
-                        <input type="hidden" name="id_tipo_reservacion" value="{{ $preReserva->id_tipo_reservacion }}">
+                        <input type="hidden" name="duracion" value="{{ $preReserva->duracion }}">
+                        <input type="hidden" name="precio_por_hora" value="{{ $preReserva->precio_por_hora }}">
+                        <input type="hidden" name="total" value="{{ $preReserva->total }}">
 
                         {{-- Nombre del titular --}}
                         <div class="mb-3">
                             <label class="form-label">Nombre del Titular</label>
-                            <input type="text" id="titular" class="form-control" placeholder="Ej: Belén Valenzuela" required>
+                            <input type="text" id="titular" class="form-control"
+                                   placeholder="Ej: Belén Valenzuela" required>
                         </div>
 
                         {{-- Número de tarjeta --}}
@@ -91,7 +98,8 @@
 
                             <div class="col-md-6">
                                 <label class="form-label">CVV</label>
-                                <input type="password" id="cvv" class="form-control" maxlength="3" required>
+                                <input type="password" id="cvv" class="form-control"
+                                       maxlength="3" required>
                             </div>
                         </div>
 
@@ -122,40 +130,32 @@ document.addEventListener("DOMContentLoaded", function () {
     const cvv = document.getElementById('cvv');
     const form = document.getElementById('formPago');
 
-    // ==============================
-    // Formatear tarjeta: XXXX XXXX XXXX XXXX
-    // ==============================
+    // Formato tarjeta
     tarjeta.addEventListener('input', function () {
         this.value = this.value
-            .replace(/\D/g, '')            // solo números
-            .replace(/(.{4})/g, '$1 ')     // espacio cada 4 números
+            .replace(/\D/g, '')
+            .replace(/(.{4})/g, '$1 ')
             .trim()
-            .slice(0, 19);                 // límite 16 + espacios
+            .slice(0, 19);
     });
 
-    // ==============================
-    // Vencimiento MM/AA
-    // ==============================
+    // Formato MM/AA
     vencimiento.addEventListener('input', function () {
         this.value = this.value
-            .replace(/\D/g, '')             // solo números
-            .slice(0, 4);                   // MMYY
+            .replace(/\D/g, '')
+            .slice(0, 4);
 
         if (this.value.length >= 3) {
             this.value = this.value.slice(0, 2) + '/' + this.value.slice(2);
         }
     });
 
-    // ==============================
-    // CVV solo números (3)
-    // ==============================
+    // CVV
     cvv.addEventListener('input', function () {
         this.value = this.value.replace(/\D/g, '').slice(0, 3);
     });
 
-    // ==============================
-    // Validación general antes de enviar
-    // ==============================
+    // Validación final
     form.addEventListener('submit', function (e) {
 
         if (tarjeta.value.replace(/\s/g, '').length !== 16) {

@@ -149,7 +149,7 @@
     <input type="hidden" name="cancha_id" value="{{ $cancha->id }}">
     <input type="hidden" name="fecha" id="inputFecha">
     <input type="hidden" name="hora" id="inputHora">
-    <input type="hidden" name="id_tipo_reservacion" id="inputDuracion">
+    <input type="hidden" name="duracion" id="inputDuracion">
     <input type="hidden" name="status" value="programado">
 
     <button type="submit" id="btnSubmit" class="btn btn-primary btn-lg w-100">
@@ -400,8 +400,12 @@ document.addEventListener("DOMContentLoaded", () => {
             marcarHorasSeleccionadas(inputHora.value, dur);
 
             modal.style.display = "none";
+
+            // 🔥 ENVÍA EL FORMULARIO AUTOMÁTICAMENTE
+            document.getElementById("formReserva").submit();
         }
     };
+
 
     // ---- CAMBIO DE FECHA ----
     btnPrev.onclick = () => cambiarDia(-1);

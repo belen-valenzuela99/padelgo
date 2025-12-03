@@ -140,12 +140,13 @@ public function confirmacionReserva($id, Request $request)
         'reservacion_date' => $request->fecha,
         'hora_inicio' => $request->hora_inicio,
         'hora_final' => $request->hora_final,
-        'status' => 'programado',
+        'status' => $request->status ?? 'programado',
     ]);
 
     return view('frontend.reservaTicket', compact('reservacion'))
         ->with('success', 'Reservación creada correctamente.');
 }
+
 
  public function horasOcupadas($canchaId,  $fecha){
         $reservas = Reservacion::where('cancha_id', $canchaId)
@@ -167,34 +168,92 @@ public function confirmacionReserva($id, Request $request)
 
     return view('jugador.reservaciones.index', compact('reservaciones'));
 }
+
 public function prepararReservacion(Request $request)
 {
+    // ==============================
+    // 1️⃣ Validaciones básicas
+    // ==============================
     $request->validate([
-        'fecha' => 'required|date',
-        'hora' => 'required',
-        'cancha_id' => 'required|exists:canchas,id',
-        'id_tipo_reservacion' => 'required|integer',
+        'fecha'      => 'required|date',
+        'hora'       => 'required',
+        'cancha_id'  => 'required|exists:canchas,id',
+        'duracion'   => 'required|integer|min:1',
     ]);
 
-    $fechaReserva = Carbon::parse($request->fecha)->format('Y-m-d');
-    $horaInicio = Carbon::parse($request->hora)->format('H:i:s');
+    $fechaReserva  = Carbon::parse($request->fecha)->format('Y-m-d');
+    $horaInicio    = Carbon::parse($request->hora)->format('H:i:s');
+    $duracionHoras = (int) $request->duracion;
 
-    $duracion = TipoReservacion::find($request->id_tipo_reservacion);
+    // Calcular hora final
+    $horaFinal = Carbon::parse($horaInicio)
+        ->addHours($duracionHoras)
+        ->format('H:i:s');
 
-    $contenido_duracion = (int) $duracion->franja_horaria;
-    $horaFinal = Carbon::parse($horaInicio)->addHours($contenido_duracion)->format('H:i:s');
+    // Buscar la cancha
+    $cancha = Canchas::find($request->cancha_id);
 
-    // Armamos un "objeto" temporal
+    // ==============================
+    // 2️⃣ Buscar tipo de reservación por horario
+    // ==============================
+    $tipos = TipoReservacion::all();
+    $tipoSeleccionado = null;
+
+    $carbonHoraInicio = Carbon::createFromFormat('H:i:s', $horaInicio);
+
+    foreach ($tipos as $tipo) {
+        $inicioTipo = Carbon::parse($tipo['hora_inicio']);
+        $finTipo    = Carbon::parse($tipo['hora_fin']);
+
+        if ($carbonHoraInicio->gte($inicioTipo) && $carbonHoraInicio->lt($finTipo)) {
+            $tipoSeleccionado = $tipo;
+            break;
+        }
+    }
+
+    // --- Manejo de horas fuera de los tipos definidos ---
+    if (!$tipoSeleccionado) {
+        $primerTipo = $tipos->first();
+        $ultimoTipo = $tipos->last();
+
+        if ($carbonHoraInicio->lt(Carbon::parse($primerTipo['hora_inicio']))) {
+            $tipoSeleccionado = $primerTipo;
+        } elseif ($carbonHoraInicio->gte(Carbon::parse($ultimoTipo['hora_fin']))) {
+            $tipoSeleccionado = $ultimoTipo;
+        } else {
+            // Hora intermedia que no coincide exactamente, usamos el primer tipo
+            $tipoSeleccionado = $primerTipo;
+        }
+    }
+
+    // ==============================
+    // 3️⃣ Calcular precio
+    // ==============================
+    $precioPorHora = $tipoSeleccionado['precio'];
+    $precioTotal   = $precioPorHora * $duracionHoras;
+
+    // ==============================
+    // 4️⃣ Armar objeto para la vista
+    // ==============================
     $preReserva = (object)[
-        'fecha' => $fechaReserva,
-        'hora_inicio' => $horaInicio,
-        'hora_final' => $horaFinal,
-        'cancha' => Canchas::find($request->cancha_id),
-        'tipoReservacion' => $duracion,
-        'cancha_id' => $request->cancha_id,
-        'id_tipo_reservacion' => $request->id_tipo_reservacion,
+        'fecha'               => $fechaReserva,
+        'hora_inicio'         => $horaInicio,
+        'hora_final'          => $horaFinal,
+        'duracion'            => $duracionHoras,
+
+        'tipoReservacion'     => $tipoSeleccionado,
+        'id_tipo_reservacion' => $tipoSeleccionado['id'],
+
+        'precio_por_hora'     => $precioPorHora,
+        'total'               => $precioTotal,
+
+        'cancha'              => $cancha,
+        'cancha_id'           => $cancha->id,
     ];
 
+    // ==============================
+    // 5️⃣ Retornar la vista
+    // ==============================
     return view('frontend.confirmarCompra', compact('preReserva'));
 }
 
