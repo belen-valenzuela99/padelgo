@@ -19,12 +19,13 @@
             <tr>
                 <th>ID</th>
                 <th>Id de usuario</th>
+                <th>Club</th>
                 <th>Cancha</th>
                 <th>Fecha de reservación</th>
                 <th>Hora de inicio</th>
                 <th>Hora de final</th>
-                <th>Tipo de reservacion</th>
-                <th>Status</th>
+                <th>Precio</th>
+                <th>Estado de Reserva</th>
                 <th>Acciones</th>
                 
             </tr>
@@ -34,11 +35,12 @@
             <tr>
                 <td>{{ $reservacion->id }}</td>
                 <td>{{ $reservacion->user?->name }}</td>
+                <td>{{ $reservacion->cancha?->club?->nombre }}</td>
                 <td>{{ $reservacion->cancha?->nombre }}</td>
                 <td>{{ \Carbon\Carbon::parse($reservacion->reservacion_date)->format('d-m-Y') }}</td>
                 <td>{{ \Carbon\Carbon::parse($reservacion->hora_inicio)->format('H:i') }}</td>
                 <td>{{ \Carbon\Carbon::parse($reservacion->hora_final)->format('H:i') }}</td>
-                <td>{{ $reservacion->tipoReservacion?->franja_horaria }} horas</td>
+                <td>${{ $reservacion->precio}}</td>
                 <td>{{ $reservacion->status }}</td>
                 <td>
                     <a href="{{ route('reservacions.edit', $reservacion->id) }}" class="btn btn-sm btn-warning">Editar</a>
