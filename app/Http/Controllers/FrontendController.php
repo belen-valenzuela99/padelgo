@@ -86,7 +86,7 @@ public function registrarReservacion(Request $request)
         ->with('success', 'Reservación creada correctamente.');
 }
 
- public function horasOcupadas($canchaId,  $fecha){
+public function horasOcupadas($canchaId,  $fecha){
         $reservas = Reservacion::where('cancha_id', $canchaId)
             ->whereDate('reservacion_date', $fecha)
             ->get(['hora_inicio', 'hora_final']);
