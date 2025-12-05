@@ -131,6 +131,7 @@ public function confirmacionReserva($id, Request $request)
         'hora_final' => 'required',
         'cancha_id' => 'required|exists:canchas,id',
         'id_tipo_reservacion' => 'required|integer',
+        'precio' => 'nullable|numeric', 
     ]);
 
     $reservacion = Reservacion::create([
@@ -141,6 +142,7 @@ public function confirmacionReserva($id, Request $request)
         'hora_inicio' => $request->hora_inicio,
         'hora_final' => $request->hora_final,
         'status' => $request->status ?? 'programado',
+        'precio' => $request->precio ?? $request->total,
     ]);
 
     return view('frontend.reservaTicket', compact('reservacion'))
@@ -160,10 +162,14 @@ public function horasOcupadas($canchaId,  $fecha){
     $userId = auth()->id();
 
     // Reservaciones solo del jugador autenticado
-    $reservaciones = Reservacion::with(['cancha', 'tipoReservacion'])
-        ->where('user_id', $userId)
-        ->orderBy('reservacion_date', 'desc')
-        ->get();
+   $reservaciones = Reservacion::with([
+        'cancha.club',   
+        'tipoReservacion'
+    ])
+    ->where('user_id', $userId)
+    ->orderBy('reservacion_date', 'desc')
+    ->get();
+
 
     return view('jugador.reservaciones.index', compact('reservaciones'));
 }

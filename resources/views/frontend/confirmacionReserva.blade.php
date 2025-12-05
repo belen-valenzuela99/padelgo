@@ -402,7 +402,7 @@ document.addEventListener("DOMContentLoaded", () => {
             modal.style.display = "none";
 
             // 🔥 ENVÍA EL FORMULARIO AUTOMÁTICAMENTE
-            document.getElementById("formReserva").submit();
+            //document.getElementById("formReserva").submit();//
         }
     };
 

@@ -15,6 +15,7 @@ class Reservacion extends Model
         'hora_inicio',
         'hora_final',
         'id_tipo_reservacion',
+        'precio',
         'status',
         
     ];

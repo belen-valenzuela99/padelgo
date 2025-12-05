@@ -12,13 +12,13 @@
     <table class="table table-bordered table-striped">
         <thead class="table-light">
             <tr>
-                <th>ID</th>
-                <th>Id de usuario</th>
+                <th>Usuario</th>
+                <th>Club</th>
                 <th>Cancha</th>
                 <th>Fecha de reservación</th>
                 <th>Hora de inicio</th>
                 <th>Hora de final</th>
-                <th>Tipo de reservacion</th>
+                <th>Precio</th> 
                 <th>Status</th>
                 
             </tr>
@@ -26,13 +26,13 @@
         <tbody>
             @forelse($reservaciones as $reservacion)
             <tr>
-                <td>{{ $reservacion->id }}</td>
                 <td>{{ $reservacion->user?->name }}</td>
+                <td>{{ $reservacion->cancha?->club?->nombre }}</td>
                 <td>{{ $reservacion->cancha?->nombre }}</td>
                 <td>{{ \Carbon\Carbon::parse($reservacion->reservacion_date)->format('d-m-Y') }}</td>
                 <td>{{ \Carbon\Carbon::parse($reservacion->hora_inicio)->format('H:i') }}</td>
                 <td>{{ \Carbon\Carbon::parse($reservacion->hora_final)->format('H:i') }}</td>
-                <td>{{ $reservacion->tipoReservacion?->franja_horaria }} horas</td>
+                <td>{{ $reservacion->precio }}</td>
                 <td>{{ $reservacion->status }}</td>
                 
             </tr>

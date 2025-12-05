@@ -73,6 +73,7 @@
                         <input type="hidden" name="duracion" value="{{ $preReserva->duracion }}">
                         <input type="hidden" name="precio_por_hora" value="{{ $preReserva->precio_por_hora }}">
                         <input type="hidden" name="total" value="{{ $preReserva->total }}">
+                        <input type="hidden" name="id_tipo_reservacion" value="{{ $preReserva->id_tipo_reservacion }}">
 
                         {{-- Nombre del titular --}}
                         <div class="mb-3">
