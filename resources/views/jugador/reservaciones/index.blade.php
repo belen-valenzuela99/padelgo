@@ -19,7 +19,7 @@
                 <th>Hora de inicio</th>
                 <th>Hora de final</th>
                 <th>Precio</th> 
-                <th>Status</th>
+                <th>Estado de Reserva</th>
                 
             </tr>
         </thead>
