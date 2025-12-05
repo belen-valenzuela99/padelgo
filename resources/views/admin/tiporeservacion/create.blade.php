@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container py-4">
-    <h2 class="mb-4">Crear Tipo Reservacion</h2>
+    <h2 class="mb-4">Crear Tipo Reservación</h2>
 
     @if($errors->any())
         <div class="alert alert-danger">
@@ -16,14 +16,23 @@
 
     <form action="{{ route('tiporeservacion.store') }}" method="POST">
         @csrf
+
         <div class="mb-3">
-            <label for="franja_horaria" class="form-label">Franja Horaria</label>
-            <input type="text" class="form-control" id="franja_horaria" name="franja_horaria" value="{{ old('franja_horaria') }}" required>
+            <label for="hora_inicio" class="form-label">Hora Inicio</label>
+            <input type="time" class="form-control" id="hora_inicio" name="hora_inicio"
+                value="{{ old('hora_inicio') }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="hora_fin" class="form-label">Hora Final</label>
+            <input type="time" class="form-control" id="hora_fin" name="hora_fin"
+                value="{{ old('hora_fin') }}" required>
         </div>
 
         <div class="mb-3">
             <label for="precio" class="form-label">Precio</label>
-            <input type="number" class="form-control" id="precio" name="precio" rows="3" value="{{ old('precio') }}">
+            <input type="number" class="form-control" id="precio" name="precio"
+                value="{{ old('precio') }}" required>
         </div>
 
         <button type="submit" class="btn btn-primary">Guardar</button>

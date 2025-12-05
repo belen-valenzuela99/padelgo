@@ -28,17 +28,24 @@ class TipoReservacionController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        $request->validate([
-            'franja_horaria' => 'required|string|max:255',
-            'precio' => 'nullable|string',
-        ]);
+ public function store(Request $request)
+{
+    $request->validate([
+        'hora_inicio' => 'required|date_format:H:i',
+        'hora_fin' => 'required|date_format:H:i|after:hora_inicio',
+        'precio' => 'required|numeric|min:0',
+    ]);
 
-        TipoReservacion::create($request->all());
-        return redirect()->route('tiporeservacion.index')->with('success', 'Tipo de Reservacion creada correctamente.');
+    TipoReservacion::create([
+        'hora_inicio' => $request->hora_inicio,
+        'hora_fin' => $request->hora_fin,
+        'precio' => $request->precio,
+    ]);
 
-    }
+    return redirect()->route('tiporeservacion.index')
+        ->with('success', 'Tipo de Reservación creada correctamente.');
+}
+
 
     /**
      * Display the specified resource.
@@ -60,17 +67,23 @@ class TipoReservacionController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, TipoReservacion $tiporeservacion)
-    {
-        $request->validate([
-            'franja_horaria' => 'string|max:255',
-            'precio' => 'nullable|integer',
-        ]);
+{
+    $request->validate([
+        'hora_inicio' => 'required|date_format:H:i',
+        'hora_fin' => 'required|date_format:H:i|after:hora_inicio',
+        'precio' => 'required|numeric|min:0',
+    ]);
 
-        $tiporeservacion->update($request->all());
+    $tiporeservacion->update([
+        'hora_inicio' => $request->hora_inicio,
+        'hora_fin' => $request->hora_fin,
+        'precio' => $request->precio,
+    ]);
 
-        return redirect()->route('tiporeservacion.index')->with('success', 'Tipo de Reservacion actualizada.');
+    return redirect()->route('tiporeservacion.index')
+        ->with('success', 'Tipo de Reservación actualizada.');
+}
 
-    }
 
     /**
      * Remove the specified resource from storage.

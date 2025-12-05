@@ -35,32 +35,93 @@ class FrontendController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function confirmacionReserva($id, Request $request)
-    {
-        $user = auth()->user();
-        $cancha = Canchas::findOrFail($id);
-        $tipos = TipoReservacion::all();
-        $club = $cancha->club;
+public function confirmacionReserva($id, Request $request)
+{
+    $user = auth()->user();
+    $cancha = Canchas::findOrFail($id);
+    $club = $cancha->club;
 
-        // Fecha seleccionada o día de hoy
-        $fecha = $request->query('fecha', Carbon::today()->toDateString());
+    // Traer todas las franjas (ordenadas por hora_inicio)
+    $tipos = TipoReservacion::orderBy('hora_inicio', 'asc')->get();
 
-        // Generar horas desde 8am a 23pm
-        $inicio = Carbon::createFromTime(8, 0);
-        $fin = Carbon::createFromTime(23, 0);
+    if ($tipos->count() == 0) {
+        return back()->with('error', 'No hay tipos de reservación configurados.');
+    }
 
-        $horas = [];
-        for ($h = $inicio->copy(); $h->lte($fin); $h->addHour()) {
-            $horas[] = $h->format('H:i');
+    // --- FUNCION PARA NORMALIZAR HORAS ---
+    $normalizarHora = function ($hora) {
+
+    // Quitar basura
+    $hora = preg_replace('/[^0-9:]/', '', trim($hora));
+
+    // Dividir en partes
+    $partes = explode(':', $hora);
+
+    // Si viene "HH", "HH:mm" o "HH:mm:ss"
+    $h = $partes[0] ?? '00';
+    $m = $partes[1] ?? '00';
+
+    return sprintf('%02d:%02d', $h, $m);
+};
+
+
+
+    // --- TOMAR PRIMERA Y ULTIMA HORA DEL SISTEMA (ROBUSTO) ---
+
+    $primerTipo = $tipos->first();
+    $ultimoTipo = $tipos->last();
+
+    $horaInicio = $normalizarHora($primerTipo->hora_inicio);
+    $horaFin    = $normalizarHora($ultimoTipo->hora_fin);
+
+    $inicioSistema = Carbon::createFromFormat('H:i', $horaInicio);
+    $finSistema    = Carbon::createFromFormat('H:i', $horaFin);
+
+    // Fecha seleccionada (o hoy por defecto)
+    $fecha = $request->query('fecha', Carbon::today()->toDateString());
+
+    // Generar todas las horas según la primera y última franja
+    $horas = [];
+
+    for ($h = $inicioSistema->copy(); $h->lte($finSistema); $h->addHour()) {
+
+        $horaStr = $h->format('H:i');
+        $precioEncontrado = null;
+
+        // Buscar precio según tipo de franja
+        foreach ($tipos as $tipo) {
+
+            // NORMALIZAR TAMBIÉN DENTRO DEL LOOP (CLAVE)
+            $hInicioTipo = Carbon::createFromFormat('H:i', $normalizarHora($tipo->hora_inicio));
+            $hFinTipo    = Carbon::createFromFormat('H:i', $normalizarHora($tipo->hora_fin));
+
+            if ($h->gte($hInicioTipo) && $h->lt($hFinTipo)) {
+                $precioEncontrado = $tipo->precio;
+                break;
+            }
         }
 
-        return view('frontend.confirmacionReserva', compact(
-            'user', 'cancha', 'tipos', 'club', 'fecha', 'horas'
-        ));
+        $horas[] = [
+            'hora'   => $horaStr,
+            'precio' => $precioEncontrado
+        ];
     }
-        
-    
-public function registrarReservacion(Request $request)
+
+
+    return view('frontend.confirmacionReserva', compact(
+        'user',
+        'cancha',
+        'tipos',
+        'club',
+        'fecha',
+        'horas',
+        'inicioSistema',
+        'finSistema'
+    ));
+
+}
+
+   public function registrarReservacion(Request $request)
 {
     $user = auth()->user();
 
@@ -79,7 +140,7 @@ public function registrarReservacion(Request $request)
         'reservacion_date' => $request->fecha,
         'hora_inicio' => $request->hora_inicio,
         'hora_final' => $request->hora_final,
-        'status' => 'programado',
+        'status' => $request->status ?? 'programado',
     ]);
 
     return view('frontend.reservaTicket', compact('reservacion'))
@@ -106,34 +167,92 @@ public function horasOcupadas($canchaId,  $fecha){
 
     return view('jugador.reservaciones.index', compact('reservaciones'));
 }
+
 public function prepararReservacion(Request $request)
 {
+    // ==============================
+    // 1️⃣ Validaciones básicas
+    // ==============================
     $request->validate([
-        'fecha' => 'required|date',
-        'hora' => 'required',
-        'cancha_id' => 'required|exists:canchas,id',
-        'id_tipo_reservacion' => 'required|integer',
+        'fecha'      => 'required|date',
+        'hora'       => 'required',
+        'cancha_id'  => 'required|exists:canchas,id',
+        'duracion'   => 'required|integer|min:1',
     ]);
 
-    $fechaReserva = Carbon::parse($request->fecha)->format('Y-m-d');
-    $horaInicio = Carbon::parse($request->hora)->format('H:i:s');
+    $fechaReserva  = Carbon::parse($request->fecha)->format('Y-m-d');
+    $horaInicio    = Carbon::parse($request->hora)->format('H:i:s');
+    $duracionHoras = (int) $request->duracion;
 
-    $duracion = TipoReservacion::find($request->id_tipo_reservacion);
+    // Calcular hora final
+    $horaFinal = Carbon::parse($horaInicio)
+        ->addHours($duracionHoras)
+        ->format('H:i:s');
 
-    $contenido_duracion = (int) $duracion->franja_horaria;
-    $horaFinal = Carbon::parse($horaInicio)->addHours($contenido_duracion)->format('H:i:s');
+    // Buscar la cancha
+    $cancha = Canchas::find($request->cancha_id);
 
-    // Armamos un "objeto" temporal
+    // ==============================
+    // 2️⃣ Buscar tipo de reservación por horario
+    // ==============================
+    $tipos = TipoReservacion::all();
+    $tipoSeleccionado = null;
+
+    $carbonHoraInicio = Carbon::createFromFormat('H:i:s', $horaInicio);
+
+    foreach ($tipos as $tipo) {
+        $inicioTipo = Carbon::parse($tipo['hora_inicio']);
+        $finTipo    = Carbon::parse($tipo['hora_fin']);
+
+        if ($carbonHoraInicio->gte($inicioTipo) && $carbonHoraInicio->lt($finTipo)) {
+            $tipoSeleccionado = $tipo;
+            break;
+        }
+    }
+
+    // --- Manejo de horas fuera de los tipos definidos ---
+    if (!$tipoSeleccionado) {
+        $primerTipo = $tipos->first();
+        $ultimoTipo = $tipos->last();
+
+        if ($carbonHoraInicio->lt(Carbon::parse($primerTipo['hora_inicio']))) {
+            $tipoSeleccionado = $primerTipo;
+        } elseif ($carbonHoraInicio->gte(Carbon::parse($ultimoTipo['hora_fin']))) {
+            $tipoSeleccionado = $ultimoTipo;
+        } else {
+            // Hora intermedia que no coincide exactamente, usamos el primer tipo
+            $tipoSeleccionado = $primerTipo;
+        }
+    }
+
+    // ==============================
+    // 3️⃣ Calcular precio
+    // ==============================
+    $precioPorHora = $tipoSeleccionado['precio'];
+    $precioTotal   = $precioPorHora * $duracionHoras;
+
+    // ==============================
+    // 4️⃣ Armar objeto para la vista
+    // ==============================
     $preReserva = (object)[
-        'fecha' => $fechaReserva,
-        'hora_inicio' => $horaInicio,
-        'hora_final' => $horaFinal,
-        'cancha' => Canchas::find($request->cancha_id),
-        'tipoReservacion' => $duracion,
-        'cancha_id' => $request->cancha_id,
-        'id_tipo_reservacion' => $request->id_tipo_reservacion,
+        'fecha'               => $fechaReserva,
+        'hora_inicio'         => $horaInicio,
+        'hora_final'          => $horaFinal,
+        'duracion'            => $duracionHoras,
+
+        'tipoReservacion'     => $tipoSeleccionado,
+        'id_tipo_reservacion' => $tipoSeleccionado['id'],
+
+        'precio_por_hora'     => $precioPorHora,
+        'total'               => $precioTotal,
+
+        'cancha'              => $cancha,
+        'cancha_id'           => $cancha->id,
     ];
 
+    // ==============================
+    // 5️⃣ Retornar la vista
+    // ==============================
     return view('frontend.confirmarCompra', compact('preReserva'));
 }
 

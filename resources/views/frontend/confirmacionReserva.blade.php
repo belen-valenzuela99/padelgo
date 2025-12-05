@@ -111,20 +111,33 @@
     <h6 class="mb-2">Selecciona un horario:</h6>
 
     <div id="contenedorHorarios" class="horarios">
-        <div class="text-muted">Cargando horarios...</div>
+        @foreach($horas as $h)
+            <div class="hora-item" data-hora="{{ $h['hora'] }}" data-precio="{{ $h['precio'] }}">
+                <strong>{{ $h['hora'] }}</strong>
+
+                @if($h['precio'])
+                    <span class="badge bg-success">${{ $h['precio'] }}</span>
+                @else
+                    <span class="badge bg-secondary">Sin precio</span>
+                @endif
+            </div>
+        @endforeach
     </div>
+
 
     {{-- MINI MODAL --}}
     <div id="miniModal">
         <h6 class="fw-bold mb-2" style="font-size: 13px;">Duración:</h6>
 
         <select id="duracionSelect" class="form-select form-select-sm mb-2">
-            <option value="">Seleccione</option>
-            @foreach ($tipos as $tipo)
-                <option value="{{ $tipo->franja_horaria }}" data-duracion="{{ $tipo->franja_horaria }}">
-                    {{ $tipo->franja_horaria }} h - ${{ $tipo->precio }}
-                </option>
-            @endforeach
+           <option value="">Seleccione</option>
+
+        @for ($i = 1; $i <= $cancha->duracion_maxima; $i++)
+            <option value="{{ $i }}">
+                {{ $i }} hora{{ $i > 1 ? 's' : '' }}
+            </option>
+        @endfor
+
         </select>
 
         <button id="cerrarModal" class="btn btn-danger btn-sm w-100">Cerrar</button>
@@ -136,7 +149,7 @@
     <input type="hidden" name="cancha_id" value="{{ $cancha->id }}">
     <input type="hidden" name="fecha" id="inputFecha">
     <input type="hidden" name="hora" id="inputHora">
-    <input type="hidden" name="id_tipo_reservacion" id="inputDuracion">
+    <input type="hidden" name="duracion" id="inputDuracion">
     <input type="hidden" name="status" value="programado">
 
     <button type="submit" id="btnSubmit" class="btn btn-primary btn-lg w-100">
@@ -146,10 +159,13 @@
 
 
 </div>
+<script>
+    window.rangoInicio = {{ $inicioSistema->format('H') }};
+    window.rangoFin = {{ $finSistema->format('H') }};
+</script>
 
 
 
-{{-- JAVASCRIPT --}}
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const canchaId = "{{ $cancha->id }}";
@@ -174,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let ocupadas = [];
 
     cargarHorarios();
-    actualizarBotonPrev(); // activar lógica al inicio
+    actualizarBotonPrev();
 
     // ---- CARGAR HORAS OCUPADAS ----
     async function cargarHorarios() {
@@ -196,12 +212,13 @@ document.addEventListener("DOMContentLoaded", () => {
     function construirHorarios(ocupadasArr) {
         contenedorHorarios.innerHTML = "";
 
-        const horas = generarHoras(8, 23);
+        // *** CAMBIO IMPORTANTE ***
+        const horas = generarHoras(window.rangoInicio, window.rangoFin);
 
         horas.forEach(hora => {
-            const slotMin = timeToMinutes(hora); // "HH:00"
+            const slotMin = timeToMinutes(hora);
 
-            // ---- 1) Detectar horas ocupadas (tu regla con medianoche) ----
+            // ---- 1) Detectar ocupación ----
             let ocupado = ocupadasArr.some(res => {
                 const [resInicio, resFin] = intervalMinutes(res.hora_inicio, res.hora_final);
 
@@ -211,7 +228,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 return (slotMinNormalized >= resInicio) && (slotMinNormalized < resFin);
             });
 
-            // ---- 2) Determinar si es fecha actual, pasada o futura ----
             const hoy = new Date();
             const hoySinHora = new Date();
             hoySinHora.setHours(0,0,0,0);
@@ -222,20 +238,16 @@ document.addEventListener("DOMContentLoaded", () => {
             const esHoy = fechaSel.getTime() === hoySinHora.getTime();
             const esFechaPasada = fechaSel.getTime() < hoySinHora.getTime();
 
-
-            // ---- 3) Regla de horas pasadas ----
             let bloqueable = true;
             let isPast = false;
 
             if (esHoy) {
-                const nowMin = hoy.getHours() * 60 + hoy.getMinutes(); 
+                const nowMin = hoy.getHours() * 60 + hoy.getMinutes();
 
-                // Si la hora ya terminó completamente → pasada
-                if (slotMin < nowMin - 0) {
+                if (slotMin < nowMin) {
                     isPast = true;
                 }
 
-                // Si es la hora actual → mirar min restantes
                 const currentHourStart = hoy.getHours() * 60;
                 const currentHourEnd = currentHourStart + 60;
 
@@ -245,67 +257,64 @@ document.addEventListener("DOMContentLoaded", () => {
                     const minutosTranscurridos = nowMin - currentHourStart;
                     const minutosRestantes = 60 - minutosTranscurridos;
 
-                    // Menos de 30 minutos → bloquear
                     if (minutosRestantes < 30) {
                         isPast = true;
                     } else {
-                        // Aquí sí puede seleccionarse siempre que NO esté ocupado
                         bloqueable = !ocupado;
                     }
                 } else if (isPast) {
                     bloqueable = false;
                 }
             }
-            // ---- 3) Regla para fechas pasadas completas ----
+
+            // ---- FECHA PASADA ----
             if (esFechaPasada) {
-                // Todo es pasado EXCEPTO lo que estaba ocupado (rojo)
                 let box = document.createElement("div");
                 box.className = "hora-box";
                 box.innerText = hora;
                 box.dataset.hora = hora;
 
                 if (ocupado) {
-                    box.classList.add("hora-ocupada"); // rojo
+                    box.classList.add("hora-ocupada");
                 } else {
-                    box.classList.add("hora-pasada"); // gris
+                    box.classList.add("hora-pasada");
                 }
 
                 contenedorHorarios.appendChild(box);
-                return; // <- IMPORTANTE, no seguir procesando más lógica
+                return;
             }
 
-            // ---- 4) Crear el box ----
+            // ---- CREAR BOX ----
             let box = document.createElement("div");
             box.className = "hora-box";
             box.innerText = hora;
             box.dataset.hora = hora;
 
-            // ---- 5) Aplicar clases finales ----
             if (ocupado) {
-                box.classList.add("hora-ocupada"); // rojo
+                box.classList.add("hora-ocupada");
             } else if (isPast && esHoy) {
-                box.classList.add("hora-pasada");  // gris
+                box.classList.add("hora-pasada");
             } else if (bloqueable) {
                 box.onclick = (e) => abrirModal(e, hora);
             }
 
             contenedorHorarios.appendChild(box);
         });
-
     }
-    // funcion auxiliar para que funcione la hora 23
+
+    // función auxiliar para intervalos
     function intervalMinutes(horaInicioStr, horaFinStr) {
-        const start = timeToMinutes(horaInicioStr.replace(/:00$/, '')); // acepta "23:00" o "23:00:00"
+        const start = timeToMinutes(horaInicioStr.replace(/:00$/, ''));
         const finRaw = timeToMinutes(horaFinStr.replace(/:00$/, ''));
         let fin = finRaw;
 
-        // Si fin es igual o menor que start interpretamos que cruza medianoche
         if (fin <= start) {
-            fin = fin + 1440; // lo ponemos en el día siguiente
+            fin = fin + 1440;
         }
 
         return [start, fin];
     }
+
     function generarHoras(inicio, fin) {
         let arr = [];
         for (let h = inicio; h <= fin; h++) {
@@ -350,8 +359,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const inicioMin = timeToMinutes(hora + ":00");
             const finMin = inicioMin + durHoras * 60;
 
-            // ---- 1) REGLA DE NO PASAR DE 00:00 ----
-            // finMin no debe ser mayor a 1440 (24 * 60)
             if (finMin > 1440) {
                 opt.disabled = true;
                 opt.style.color = "#999";
@@ -359,24 +366,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // ---- 2) REGLA DE SOLAPAMIENTO ----
             const solapa = ocupadas.some(res => {
                 const [resInicio, resFin] = intervalMinutes(res.hora_inicio, res.hora_final);
 
-                // inicio y fin del candidato elegido
-                // inicioMin ya lo tienes
-                // finMin ya lo calculaste (inicioMin + durHoras * 60)
-
-                // si la reserva cruza medianoche también hay que considerar el caso
-                // si el inicioMin está antes de resInicio pero la reserva cruza, lo normalizamos
                 const slotStart = inicioMin;
                 const slotStartNorm = (slotStart < resInicio && resFin > 1440) ? slotStart + 1440 : slotStart;
                 const slotEndNorm = (finMin <= resInicio && resFin > 1440) ? finMin + 1440 : finMin;
 
-                // comprobación clásica de solapamiento en minutos normalizados
                 return (slotStartNorm < resFin) && (slotEndNorm > resInicio);
             });
-
 
             if (solapa) {
                 opt.disabled = true;
@@ -385,7 +383,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
         });
-
 
         duracionSelect.value = "";
         inputDuracion.value = "";
@@ -400,11 +397,12 @@ document.addEventListener("DOMContentLoaded", () => {
             inputDuracion.value = sel;
 
             const dur = parseInt(sel, 10);
-
-            // colorear horas elegidas
             marcarHorasSeleccionadas(inputHora.value, dur);
 
             modal.style.display = "none";
+
+            // 🔥 ENVÍA EL FORMULARIO AUTOMÁTICAMENTE
+            document.getElementById("formReserva").submit();
         }
     };
 
@@ -415,7 +413,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function crearFechaLocal(str) {
         const [y, m, d] = str.split("-").map(Number);
-        return new Date(y, m - 1, d); // ← esto crea fecha LOCAL
+        return new Date(y, m - 1, d);
     }
 
     function cambiarDia(d) {
@@ -431,9 +429,7 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href = `?fecha=${nueva}`;
     }
 
-
-
-    // ---- CONTROL VISUAL DE BOTÓN "<" ----
+    // ---- CONTROL BOTÓN "<" ----
     function actualizarBotonPrev() {
         const hoy = new Date();
         hoy.setHours(0,0,0,0);
@@ -452,18 +448,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-
     actualizarBotonPrev();
 
-    // --- Selector de Fecha ---
+    // ---- Selector de fecha ----
     selectorFecha.addEventListener("change", () => {
         if (!selectorFecha.value) return;
-
         window.location.href = `?fecha=${selectorFecha.value}`;
     });
 
     function marcarHorasSeleccionadas(horaInicio, duracionHoras) {
-        // limpiar colores previos
         document.querySelectorAll(".hora-box").forEach(b => {
             b.classList.remove("hora-seleccionada");
         });
@@ -480,7 +473,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (box) box.classList.add("hora-seleccionada");
         }
     }
-
 
 });
 </script>
