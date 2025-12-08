@@ -19,24 +19,45 @@
 
         <div class="mb-3">
             <label for="hora_inicio" class="form-label">Hora Inicio</label>
-            <input type="time" class="form-control" id="hora_inicio" name="hora_inicio"
-                value="{{ old('hora_inicio') }}" required>
+            <input 
+                type="time" 
+                class="form-control" 
+                id="hora_inicio" 
+                name="hora_inicio"
+                step="60"
+                value="{{ old('hora_inicio') ? substr(old('hora_inicio'), 0, 5) : '' }}"
+                required
+            >
         </div>
 
         <div class="mb-3">
             <label for="hora_fin" class="form-label">Hora Final</label>
-            <input type="time" class="form-control" id="hora_fin" name="hora_fin"
-                value="{{ old('hora_fin') }}" required>
+            <input 
+                type="time" 
+                class="form-control" 
+                id="hora_fin" 
+                name="hora_fin"
+                step="60"
+                value="{{ old('hora_fin') ? substr(old('hora_fin'), 0, 5) : '' }}"
+                required
+            >
         </div>
 
         <div class="mb-3">
             <label for="precio" class="form-label">Precio</label>
-            <input type="number" class="form-control" id="precio" name="precio"
-                value="{{ old('precio') }}" required>
+            <input 
+                type="number" 
+                class="form-control" 
+                id="precio" 
+                name="precio"
+                value="{{ old('precio') }}" 
+                required
+            >
         </div>
 
         <button type="submit" class="btn btn-primary">Guardar</button>
         <a href="{{ route('tiporeservacion.index') }}" class="btn btn-secondary ms-2">Cancelar</a>
     </form>
+
 </div>
 @endsection

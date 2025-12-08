@@ -8,6 +8,9 @@ use App\Http\Controllers\ClubController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\TipoReservacionController;
 use App\Http\Controllers\ReservacionController;
+use App\Http\Controllers\CanchaTipoReservacionController;
+use App\Http\Controllers\Admin\UserAdminController;
+
 
 Route::get('/reservaPrueba', [ReservaController::class, 'index'])
      ->name('reserva.index');
@@ -34,6 +37,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     // Se agrega la ruta dentro del middleware del admin o del jugador, 
     Route::resource('clubes', ClubController::class)->parameters(['clubes' => 'club']);
 
+    Route::resource('users', UserAdminController::class)->names('admin.users');
 });
 
 // ================== DASHBOARD JUGADOR ==================
@@ -71,6 +75,9 @@ Route::middleware(['auth', 'role:gestor'])->prefix('gestor')->group(function () 
     Route::resource('canchas', CanchasController::class);
     Route::resource('tiporeservacion', TipoReservacionController::class);
     Route::resource('reservacions', ReservacionController::class);
+    Route::get('/canchas/{id}/tipos', [CanchaTipoReservacionController::class, 'edit'])->name('canchas.tipos.edit');
+    Route::put('/canchas/{id}/tipos', [CanchaTipoReservacionController::class, 'update'])->name('canchas.tipos.update');
+
 });
 
 // ================== PERFIL ==================

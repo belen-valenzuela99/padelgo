@@ -14,11 +14,14 @@ class CanchasController extends Controller
         
         $user = auth()->user();
         
-        $canchas = Canchas::with('club')
+        $canchas = Canchas::with(['club', 'tiposReservacion' => function ($q) {
+            $q->wherePivot('activo', true)->orderBy('hora_inicio');
+        }])
         ->whereHas('club', function ($query) use ($user) {
-            $query->where('id_user', $user->id); // solo clubes del gestor
+            $query->where('id_user', $user->id);
         })
         ->get();
+        
         return view('admin.canchas.index', compact('canchas'));
 
     }

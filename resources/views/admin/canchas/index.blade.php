@@ -16,36 +16,63 @@
             <tr>
                 <th>ID</th>
                 <th>Nombre</th>
-                <th>Descripcion</th>
+                <th>Descripción</th>
                 <th>Club</th>
+                <th>Horarios Activos</th> {{-- 🕒 NUEVA COLUMNA --}}
                 <th>Hora Máxima de Reserva</th>
                 <th>Estado</th>
                 <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
-            @forelse($canchas as $cancha)
-            <tr>
-                <td>{{ $cancha->id }}</td>
-                <td>{{ $cancha->nombre }}</td>
-                <td>{{ $cancha->descripcion }}</td>
-                <td>{{ $cancha->club ? $cancha->club->nombre : "Sin club" }}</td>
-                <td>{{ $cancha->duracion_maxima }}</td>
+        @forelse($canchas as $cancha)
+        <tr>
+            <td>{{ $cancha->id }}</td>
+            <td>{{ $cancha->nombre }}</td>
+            <td>{{ $cancha->descripcion }}</td>
+            <td>{{ $cancha->club ? $cancha->club->nombre : "Sin club" }}</td>
 
-                <!-- ESTADO -->
-                <td>
-                    @if($cancha->is_active)
-                        <span class="badge bg-success">Publicado</span>
-                    @else
-                        <span class="badge bg-secondary">No Publicado</span>
-                    @endif
-                </td>
+            {{-- HORARIOS ASIGNADOS --}}
+            <td>
+                @php
+                    $horariosActivos = $cancha->tiposReservacion->where('pivot.activo', 1);
+                @endphp
 
-                <!-- ACCIONES -->
-                <td>
-                    <a href="{{ route('canchas.edit', $cancha->id) }}" class="btn btn-sm btn-warning">Editar</a>
+                @if($horariosActivos->isNotEmpty())
+                    <ul class="list-unstyled mb-0">
+                        @foreach($horariosActivos as $tipo)
+                            @php
+                                $horaInicio = \Carbon\Carbon::createFromFormat('H:i:s', $tipo->hora_inicio)->format('H:i');
+                                $horaFin = \Carbon\Carbon::createFromFormat('H:i:s', $tipo->hora_fin)->format('H:i');
+                                // Si hay un precio personalizado en el pivot, usarlo, sino el precio global del tipo
+                                $precio = $tipo->pivot->precio ?? $tipo->precio;
+                            @endphp
+                            <li>
+                                {{ $horaInicio }} - {{ $horaFin }}
+                                <span class="text-muted">($ {{ number_format($precio, 2) }})</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <span class="text-muted">Sin horarios asignados</span>
+                @endif
+            </td>
 
-                    {{-- Botón Publicar / Despublicar --}}
+            <td>{{ $cancha->duracion_maxima }}</td>
+            <td>
+                @if($cancha->is_active)
+                    <span class="badge bg-success">Publicado</span>
+                @else
+                    <span class="badge bg-secondary">No Publicado</span>
+                @endif
+            </td>
+
+            <td>
+                <a href="{{ route('canchas.edit', $cancha->id) }}" class="btn btn-sm btn-warning">Editar</a>
+                <a href="{{ route('canchas.tipos.edit', $cancha->id) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fa fa-clock"></i> Asignar Horarios
+                </a>
+                {{-- Botón Publicar / Despublicar --}}
                     @if($cancha->is_active)
                         <form action="{{ route('canchas.desactivar', $cancha->id) }}" 
                             method="POST" class="d-inline">
@@ -65,15 +92,17 @@
                             </button>
                         </form>
                     @endif
+            </td>
+        </tr>
+        @empty
+        <tr>
+            <td colspan="8" class="text-center">No hay canchas registradas.</td>
+        </tr>
+        @endforelse
 
-                </td>
-            </tr>
-            @empty
-            <tr>
-                <td colspan="7" class="text-center">No hay canchas registradas.</td>
-            </tr>
-            @endforelse
+
         </tbody>
     </table>
+
 </div>
 @endsection

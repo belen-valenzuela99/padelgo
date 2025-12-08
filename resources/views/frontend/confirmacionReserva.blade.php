@@ -130,15 +130,14 @@
         <h6 class="fw-bold mb-2" style="font-size: 13px;">Duración:</h6>
 
         <select id="duracionSelect" class="form-select form-select-sm mb-2">
-           <option value="">Seleccione</option>
-
-        @for ($i = 1; $i <= $cancha->duracion_maxima; $i++)
-            <option value="{{ $i }}">
-                {{ $i }} hora{{ $i > 1 ? 's' : '' }}
-            </option>
-        @endfor
-
+            <option value="">Seleccione</option>
+            @for ($i = 1; $i <= $cancha->duracion_maxima; $i++)
+                <option value="{{ $i }}" data-duracion="{{ $i }}">
+                    {{ $i }} hora{{ $i > 1 ? 's' : '' }}
+                </option>
+            @endfor
         </select>
+
 
         <button id="cerrarModal" class="btn btn-danger btn-sm w-100">Cerrar</button>
     </div>
@@ -160,11 +159,9 @@
 
 </div>
 <script>
-    window.rangoInicio = {{ $inicioSistema->format('H') }};
-    window.rangoFin = {{ $finSistema->format('H') }};
+    window.rangoInicio = {{ $inicioSistemaHora }};
+    window.rangoFin = {{ $finSistemaHora }};
 </script>
-
-
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -215,14 +212,15 @@ document.addEventListener("DOMContentLoaded", () => {
         // *** CAMBIO IMPORTANTE ***
         const horas = generarHoras(window.rangoInicio, window.rangoFin);
 
-        horas.forEach(hora => {
-            const slotMin = timeToMinutes(hora);
+        horas.forEach(h => { // ← cambiamos el nombre del parámetro a "h"
+            const horaLabel = h.label; // texto que se muestra (ej. "00:00")
+            const slotMin = h.value;   // valor lógico (en minutos, puede ser >1440)
 
             // ---- 1) Detectar ocupación ----
             let ocupado = ocupadasArr.some(res => {
                 const [resInicio, resFin] = intervalMinutes(res.hora_inicio, res.hora_final);
 
-                const slotMinNormalized = 
+                const slotMinNormalized =
                     (slotMin < resInicio && resFin > 1440) ? slotMin + 1440 : slotMin;
 
                 return (slotMinNormalized >= resInicio) && (slotMinNormalized < resFin);
@@ -230,10 +228,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const hoy = new Date();
             const hoySinHora = new Date();
-            hoySinHora.setHours(0,0,0,0);
+            hoySinHora.setHours(0, 0, 0, 0);
 
             const fechaSel = crearFechaLocal(fechaActual.value);
-            fechaSel.setHours(0,0,0,0);
+            fechaSel.setHours(0, 0, 0, 0);
 
             const esHoy = fechaSel.getTime() === hoySinHora.getTime();
             const esFechaPasada = fechaSel.getTime() < hoySinHora.getTime();
@@ -243,14 +241,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (esHoy) {
                 const nowMin = hoy.getHours() * 60 + hoy.getMinutes();
+                const cruzaMedianoche = window.rangoFin < window.rangoInicio;
 
-                if (slotMin < nowMin) {
+                let slotRef = slotMin;
+                let nowRef = nowMin;
+
+                if (cruzaMedianoche && (slotMin / 60) <= window.rangoFin) {
+                    slotRef += 1440; // slot pertenece al “día siguiente”
+                }
+
+                if (cruzaMedianoche && hoy.getHours() <= window.rangoFin) {
+                    nowRef += 1440; // hora actual también pertenece al día siguiente
+                }
+
+                if (slotRef < nowRef) {
                     isPast = true;
                 }
 
                 const currentHourStart = hoy.getHours() * 60;
-                const currentHourEnd = currentHourStart + 60;
-
                 const isCurrentHour = slotMin === currentHourStart;
 
                 if (isCurrentHour) {
@@ -271,8 +279,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (esFechaPasada) {
                 let box = document.createElement("div");
                 box.className = "hora-box";
-                box.innerText = hora;
-                box.dataset.hora = hora;
+                box.innerText = horaLabel;
+                box.dataset.hora = horaLabel;
 
                 if (ocupado) {
                     box.classList.add("hora-ocupada");
@@ -287,20 +295,21 @@ document.addEventListener("DOMContentLoaded", () => {
             // ---- CREAR BOX ----
             let box = document.createElement("div");
             box.className = "hora-box";
-            box.innerText = hora;
-            box.dataset.hora = hora;
+            box.innerText = horaLabel;
+            box.dataset.hora = horaLabel;
 
             if (ocupado) {
                 box.classList.add("hora-ocupada");
             } else if (isPast && esHoy) {
                 box.classList.add("hora-pasada");
             } else if (bloqueable) {
-                box.onclick = (e) => abrirModal(e, hora);
+                box.onclick = (e) => abrirModal(e, horaLabel);
             }
 
             contenedorHorarios.appendChild(box);
         });
     }
+
 
     // función auxiliar para intervalos
     function intervalMinutes(horaInicioStr, horaFinStr) {
@@ -314,14 +323,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
         return [start, fin];
     }
+    
+    // Convierte valores mayores a 23 a su formato reloj (24 -> 00, 25 -> 01, etc.)
+    function horaDisplay(h) {
+        const horaReal = h % 24;
+        return String(horaReal).padStart(2, "0") + ":00";
+    }
 
+    // ---- GENERAR HORAS ----
     function generarHoras(inicio, fin) {
+        console.log("=== generarHoras() ===");
+        console.log("Inicio recibido:", inicio);
+        console.log("Fin recibido:", fin);
+
         let arr = [];
-        for (let h = inicio; h <= fin; h++) {
-            arr.push(h.toString().padStart(2, "0") + ":00");
+        const cruzaMedianoche = fin < inicio;
+
+        console.log("¿Cruza medianoche?", cruzaMedianoche);
+
+        if (cruzaMedianoche) {
+            for (let h = inicio; h < 24; h++) {
+                arr.push({
+                    label: horaDisplay(h),
+                    value: h * 60,
+                });
+            }
+            for (let h = 24; h <= fin + 24; h++) {
+                arr.push({
+                    label: horaDisplay(h),
+                    value: h * 60,
+                });
+            }
+        } else {
+            for (let h = inicio; h <= fin; h++) {
+                arr.push({
+                    label: horaDisplay(h), // ← aquí usamos la función
+                    value: h * 60,
+                });
+            }
         }
+
+        console.log("Resultado final de generarHoras():", arr.map(x => x.label).join(", "));
         return arr;
     }
+
+
+
+
+
 
     function timeToMinutes(t) {
         const parts = t.split(':').map(Number);
@@ -352,13 +401,26 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         const opciones = Array.from(duracionSelect.options).slice(1);
+        const inicioMin = timeToMinutes(hora + ":00");
+
+        // Buscar la próxima hora ocupada (la más cercana después del inicio)
+        let proximaOcupada = null;
+        ocupadas.forEach(res => {
+            const [resInicio, resFin] = intervalMinutes(res.hora_inicio, res.hora_final);
+            if (resInicio > inicioMin) {
+                if (proximaOcupada === null || resInicio < proximaOcupada) {
+                    proximaOcupada = resInicio;
+                }
+            }
+        });
+
         opciones.forEach(opt => {
             const durHoras = parseInt(opt.dataset.duracion || "0", 10);
             if (!durHoras) return;
 
-            const inicioMin = timeToMinutes(hora + ":00");
             const finMin = inicioMin + durHoras * 60;
 
+            // Desactivar si excede medianoche
             if (finMin > 1440) {
                 opt.disabled = true;
                 opt.style.color = "#999";
@@ -366,23 +428,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            // Desactivar si llega hasta o pasa la próxima ocupada
+            if (proximaOcupada && finMin > proximaOcupada) {
+                opt.disabled = true;
+                opt.style.color = "#999";
+                opt.style.backgroundColor = "#f8f9fa";
+                return;
+            }
+
+            // También comprobar solapamiento total (por seguridad)
             const solapa = ocupadas.some(res => {
                 const [resInicio, resFin] = intervalMinutes(res.hora_inicio, res.hora_final);
-
-                const slotStart = inicioMin;
-                const slotStartNorm = (slotStart < resInicio && resFin > 1440) ? slotStart + 1440 : slotStart;
-                const slotEndNorm = (finMin <= resInicio && resFin > 1440) ? finMin + 1440 : finMin;
-
-                return (slotStartNorm < resFin) && (slotEndNorm > resInicio);
+                return (inicioMin < resFin && finMin > resInicio);
             });
 
             if (solapa) {
                 opt.disabled = true;
                 opt.style.color = "#999";
                 opt.style.backgroundColor = "#f8f9fa";
-                return;
             }
         });
+
 
         duracionSelect.value = "";
         inputDuracion.value = "";

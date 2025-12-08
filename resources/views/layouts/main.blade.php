@@ -42,6 +42,9 @@
                              <li class="nav-item">
                                 <a class="nav-link" href="{{ route('clubes.index') }}">Clubes</a>
                             </li>
+                              <li class="nav-item">
+                                <a class="nav-link" href="{{ route('admin.users.index') }}">Usuarios</a>
+                            </li>
                         @elseif(Auth::user()->role === 'jugador') 
                          <li class="nav-item">
                                 <a class="nav-link" href="{{ route('jugador.reservaciones.index') }}">Mis Reservaciones</a>

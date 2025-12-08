@@ -25,6 +25,14 @@ protected $fillable = [
         return $this->belongsTo(Club::class, "id_club");
     }
         
+    public function tiposReservacion()
+    {
+        return $this->belongsToMany(TipoReservacion::class, 'cancha_tipo_reservacion', 'cancha_id', 'tipo_reservacion_id')
+                    ->withPivot('precio', 'activo')
+                    ->withTimestamps();
+    }
+
+
 }
 
 

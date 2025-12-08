@@ -22,5 +22,14 @@ class TipoReservacion extends Model
     //{
     //    return $this->hasMany(Partida::class);
     //}
+    public function canchas()
+    {
+        return $this->belongsToMany(Canchas::class, 'cancha_tipo_reservacion', 'tipo_reservacion_id', 'cancha_id')
+                    ->withPivot('precio', 'activo')
+                    ->withTimestamps();
+    }
+
+
+
 
 }
