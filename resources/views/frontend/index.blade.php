@@ -1,39 +1,86 @@
-@extends('layouts.main') {{-- o el layout que uses --}}
+@extends('layouts.main')
+
+@section('carousel')
+<section>
+    <div id="carouselHome" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="3000">
+
+        <div class="carousel-inner">
+
+            <div class="carousel-item active">
+                <img src="{{ asset('img/frontend/carrusel1.jpg') }}" class="d-block w-100" alt="">
+                <div class="carousel-caption-left">
+                    <div>
+                        <h2>Reserva rápido con <span class="text-verde">PadelGO</span></h2>
+                        <p class="sub">Encuentra tu cancha ideal al instante</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="carousel-item">
+                <img src="{{ asset('img/frontend/carrusel2.jpg') }}" class="d-block w-100" alt="">
+                <div class="carousel-caption-left">
+                    <div>
+                        <h2>Elegí tu club favorito</h2>
+                        <p class="sub">Disponibilidad en vivo y reservas inmediatas</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="carousel-item">
+                <img src="{{ asset('img/frontend/carrusel3.jpg') }}" class="d-block w-100" alt="">
+                <div class="carousel-caption-left">
+                    <div>
+                        <h2>Simple. Rápido. Fácil.</h2>
+                        <p class="sub">Juga sin complicaciones</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselHome" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselHome" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
+
+    </div>
+</section>
+@endsection
+
+
 
 @section('content')
+
 <div class="container mx-auto text-center p-6">
 
-    <h1 class="text-2xl font-bold mb-4">Reserva tu cancha</h1>
-    <div>
-        <p>Clubes Disponibles</p>
-    </div>
-        <div class="container_card">
+    <h1 class="text-2xl font-bold mb-4">Clubes Disponibles</h1>
+   
 
-            @forelse($clubes as $club)
-
-                <div class="card" style="width: 18rem;">
-                    <div class="contenedor_imagen-card">
-                        <img src="{{ asset($club->img) }}" class="card-img-top" alt="...">
-                    </div>
-                <div class="card-body">
+    <div class="container_card">
+        @forelse($clubes as $club)
+            <div class="card" style="width: 18rem;">
+                <div class="contenedor_imagen-card">
+                    <img src="{{ asset($club->img) }}" class="card-img-top" alt="">
+                </div>
+                <div class="card-body card-club">
                     <h5 class="card-title">{{ $club->nombre }}</h5>
                     <p class="card-text">{{ $club->direccion }}</p>
                     <p class="card-text">{{ $club->descripcion }}</p>
-                    <a href="{{ route('clubDetalle', $club->id) }}" class="btn btn-primary">Ver Club</a>
-                </div>
-                </div>
-            @empty
 
-                    <p>No hay clubes disponibles</p>
-                
-            @endforelse
-        </div>
-    
-    
+                    <a href="{{ route('clubDetalle', $club->id) }}" class="btn btn-primary">
+                        Ver Club
+                    </a>
+                </div>
+            </div>
+        @empty
+            <p>No hay clubes disponibles</p>
+        @endforelse
+    </div>
+
 </div>
 
-{{-- Script para cambiar el día --}}
-<script>
-
-</script>
 @endsection
+

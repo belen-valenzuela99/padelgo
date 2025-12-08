@@ -81,6 +81,11 @@
     object-fit: cover;    /* mantiene calidad sin deformar */
 }
 
+.card-club {
+display:flex;
+flex-direction: column;
+justify-content: space-between;
+}
 
 /* BOTÓN */
 .btn-primary {
@@ -190,4 +195,131 @@
     color: rgba(36, 87, 255, 0.55);   /* azul PadelGO pero SUAVE y elegante */
     font-weight: 400;
     font-size: 1.1rem;
+}
+
+/* SECCION DEL CARRUSEL */
+.carousel-item{
+    height: 500px;
+}
+
+.carousel-item img{
+    height: 100%;
+    width: 100%;
+    object-fit: cover;        /* Ajusta la imagen recortando lo necesario */
+    object-position: center;  /* Centra la imagen */
+}
+
+/* Contenedor del texto con fondo degradado más ancho */
+.carousel-caption-left {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 50%; /* ahora ocupa el 40% del carrusel */
+    display: flex;
+    align-items: center;
+    padding: 3rem 2rem;
+    padding-left: 200px;
+    
+    background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0.90),
+        rgba(255, 255, 255, 0)
+    );
+}
+
+/* Estilo unificado para todos los textos */
+.carousel-caption-left h2 {
+    font-size: 2.4rem;
+    font-weight: 800;
+    line-height: 1.2;
+    color: #16162C; /* fondo oscuro */
+}
+
+.carousel-caption-left .sub {
+    font-size: 1.2rem;
+    margin-top: 10px;
+    color: #0c1449; /* azul PadelGO */
+    font-weight: 500;
+}
+
+/* Color verde neón */
+.text-verde {
+    color: #C3FF00;
+}
+
+/* Imágenes centradas */
+.carousel-item {
+    height: 420px;
+}
+
+.carousel-item img {
+    object-fit: cover;
+    height: 100%;
+}
+
+/* FOOTER*/
+.main-body{
+min-height: 500px;
+}
+
+.footer-padelgo {
+    background-color: #16162C;
+    color: #FFFFFF;
+}
+
+.footer-title {
+    color: #C3FF00;
+    font-weight: 700;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.footer-text {
+    color: #FFFFFF;
+    opacity: 0.85;
+    font-size: 0.95rem;
+}
+
+.footer-list {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-list li {
+    margin-bottom: 8px;
+}
+
+.footer-link {
+    color: #FFFFFF;
+    text-decoration: none;
+    opacity: 0.85;
+    transition: 0.3s;
+}
+
+.footer-link:hover {
+    color: #C3FF00;
+    opacity: 1;
+}
+
+.footer-socials a {
+    display: block;
+    color: #1A39FF;
+    margin-bottom: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.footer-socials a:hover {
+    color: #C3FF00;
+}
+
+.footer-divider {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.footer-copy {
+    font-size: 0.85rem;
+    opacity: 0.7;
 }
