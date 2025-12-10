@@ -9,7 +9,9 @@ use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\TipoReservacionController;
 use App\Http\Controllers\ReservacionController;
 use App\Http\Controllers\CanchaTipoReservacionController;
-use App\Http\Controllers\Admin\UserAdminController;
+use App\Http\Controllers\Admin\UserAdminController; 
+use App\Http\Controllers\AbonoController;    
+
 
 
 Route::get('/reservaPrueba', [ReservaController::class, 'index'])
@@ -77,6 +79,7 @@ Route::middleware(['auth', 'role:gestor'])->prefix('gestor')->group(function () 
     Route::resource('reservacions', ReservacionController::class);
     Route::get('/canchas/{id}/tipos', [CanchaTipoReservacionController::class, 'edit'])->name('canchas.tipos.edit');
     Route::put('/canchas/{id}/tipos', [CanchaTipoReservacionController::class, 'update'])->name('canchas.tipos.update');
+    Route::resource('abonos', AbonoController::class);
 
 });
 
@@ -94,7 +97,6 @@ Route::get('/club/{id}', [FrontendController::class, 'clubDetalle'])->name('club
 Route::get('/reservar/{id}', [FrontendController::class, 'confirmacionReserva'])->name('confirmacionReserva');
 // Ajax para consultar horas ocupadas
 Route::get('/horas-ocupadas/{cancha}/{fecha}', [FrontendController::class, 'horasOcupadas']);
-
 
 
 

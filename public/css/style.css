@@ -323,3 +323,65 @@ min-height: 500px;
     font-size: 0.85rem;
     opacity: 0.7;
 }
+
+
+/* LOGIN*/
+/* Fondo general */
+.login-container {
+    background-color: #16162C;
+    min-height: 100vh;
+}
+
+/* Tarjeta */
+.login-card {
+    background-color: #1A39FF;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, .4);
+    border: 2px solid #C3FF00;
+}
+
+/* Logo */
+.login-logo {
+    height: 80px;
+    width: 80px;
+    object-fit: cover;
+    border: 3px solid #C3FF00;
+}
+
+/* Título */
+.login-title {
+    color: #FFFFFF;
+    font-weight: bold;
+}
+
+/* Inputs */
+input[type="email"],
+input[type="password"] {
+    border-radius: 6px;
+    border: 1px solid #C3FF00 !important;
+    background-color: #ffffff;
+}
+
+input:focus {
+    border-color: #C3FF00 !important;
+}
+
+/* Botón */
+button.btn-success {
+    background-color: #C3FF00 !important;
+    color: #16162C !important;
+    font-weight: bold;
+    border: none;
+    padding: 8px 18px;
+    transition: .2s;
+}
+
+button.btn-success:hover {
+    background-color: #a4d800 !important;
+}
+
+/* Links */
+a.text-white:hover {
+    color: #C3FF00 !important;
+}
