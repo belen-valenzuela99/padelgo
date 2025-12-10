@@ -10,15 +10,15 @@
   <img src="{{ asset("img/reservajugador.png") }}" class="card-img-top" alt="...">
   <div class="card-body">
     <h5 class="card-title">Ver todos los clubes disponibles</h5>
-    <p class="card-text">Elegi el club y la cancha de tu preferencia</p>
+    <p class="card-text">Elegí el club y reservá tu cancha</p>
     <a href="{{ route('home') }}" class="btn btn-primary">Ver los clubes</a>
   </div>
 </div>
               <div class="card" style="width: 18rem;">
-  <img src="{{ asset("img/reservajugador.png") }}" class="card-img-top" alt="...">
+  <img src="{{ asset("img/reservaciones.png") }}" class="card-img-top" alt="...">
   <div class="card-body">
-    <h5 class="card-title">Ver todas mis reservas</h5>
-     <p class="card-text"><br><br><br></p>
+    <h5 class="card-title">Mis reservas</h5>
+     <p class="card-text">Administra todas tus reservas<br><br><br></p>
     <a href="{{ route('jugador.reservaciones.index') }}" class="btn btn-primary">consultar</a>
   </div>
 </div>
