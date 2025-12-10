@@ -33,5 +33,14 @@
     <a href="{{ route('tiporeservacion.index') }}" class="btn btn-primary">Gestionar</a>
   </div>
 </div>
+
+   <div class="card" style="width: 18rem;">
+  <img src="{{ asset("img/frontend/abono.svg") }}" class="card-img-top" alt="...">
+  <div class="card-body">
+    <h5 class="card-title">Abonos</h5>
+    <p class="card-text">Gestione los abonos mensuales para sus usuarios</p>
+    <a href="{{ route('abonos.index') }}" class="btn btn-primary">Gestionar</a>
+  </div>
+</div>
     </div>
 @endsection
