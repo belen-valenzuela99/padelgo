@@ -58,11 +58,27 @@
     #miniModal select {
         font-size: 13px;
     }
+    .hora-seleccionada {
+        background-color: #2ecc71 !important; /* verde */
+        color: white !important;
+        border: 2px solid #27ae60;
+    }
+    .hora-pasada {
+        background: #e0e0e0;
+        color: #777;
+        cursor: not-allowed !important;
+    }
+    .hora-pasada.hora-box:hover {
+        background: #e0e0e0;
+        color: #777;
+    }
+
 </style>
 
 <div class="container py-3">
 
     <h4 class="fw-bold">{{ $club->nombre }} - {{ $cancha->nombre }}</h4>
+    <p>{{ $cancha->descripcion }}</p>
     <p class="text-muted" style="font-size: 13px;">Dirección: {{ $club->direccion }}</p>
 
     {{-- FECHA --}}
@@ -95,8 +111,19 @@
     <h6 class="mb-2">Selecciona un horario:</h6>
 
     <div id="contenedorHorarios" class="horarios">
-        <div class="text-muted">Cargando horarios...</div>
+        @foreach($horas as $h)
+            <div class="hora-item" data-hora="{{ $h['hora'] }}" data-precio="{{ $h['precio'] }}">
+                <strong>{{ $h['hora'] }}</strong>
+
+                @if($h['precio'])
+                    <span class="badge bg-success">${{ $h['precio'] }}</span>
+                @else
+                    <span class="badge bg-secondary">Sin precio</span>
+                @endif
+            </div>
+        @endforeach
     </div>
+
 
     {{-- MINI MODAL --}}
     <div id="miniModal">
@@ -104,35 +131,38 @@
 
         <select id="duracionSelect" class="form-select form-select-sm mb-2">
             <option value="">Seleccione</option>
-            @foreach ($tipos as $tipo)
-                <option value="{{ $tipo->id }}" data-duracion="{{ $tipo->franja_horaria }}">
-                    {{ $tipo->franja_horaria }} h - ${{ $tipo->precio }}
+            @for ($i = 1; $i <= $cancha->duracion_maxima; $i++)
+                <option value="{{ $i }}" data-duracion="{{ $i }}">
+                    {{ $i }} hora{{ $i > 1 ? 's' : '' }}
                 </option>
-            @endforeach
+            @endfor
         </select>
+
 
         <button id="cerrarModal" class="btn btn-danger btn-sm w-100">Cerrar</button>
     </div>
 
     {{-- FORMULARIO REAL --}}
-    <form action="{{ route('reservar.store') }}" method="POST" id="formReserva" class="mt-3">
-        @csrf
-        <input type="hidden" name="cancha_id" value="{{ $cancha->id }}">
-        <input type="hidden" name="fecha" id="inputFecha">
-        <input type="hidden" name="hora" id="inputHora">
-        <input type="hidden" name="id_tipo_reservacion" id="inputDuracion">
-        <input type="hidden" name="status" value="programado">
+    <form action="{{ route('jugador.reservar.preparar') }}" method="POST" id="formReserva" class="mt-3">
+    @csrf
+    <input type="hidden" name="cancha_id" value="{{ $cancha->id }}">
+    <input type="hidden" name="fecha" id="inputFecha">
+    <input type="hidden" name="hora" id="inputHora">
+    <input type="hidden" name="duracion" id="inputDuracion">
+    <input type="hidden" name="status" value="programado">
 
-        <button type="submit" id="btnSubmit" class="btn btn-primary btn-lg w-100">
-            Confirmar Reserva
-        </button>
-    </form>
+    <button type="submit" id="btnSubmit" class="btn btn-primary btn-lg w-100">
+        Confirmar Reserva
+    </button>
+</form>
+
 
 </div>
+<script>
+    window.rangoInicio = {{ $inicioSistemaHora }};
+    window.rangoFin = {{ $finSistemaHora }};
+</script>
 
-
-
-{{-- JAVASCRIPT --}}
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const canchaId = "{{ $cancha->id }}";
@@ -157,7 +187,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let ocupadas = [];
 
     cargarHorarios();
-    actualizarBotonPrev(); // activar lógica al inicio
+    actualizarBotonPrev();
 
     // ---- CARGAR HORAS OCUPADAS ----
     async function cargarHorarios() {
@@ -179,35 +209,168 @@ document.addEventListener("DOMContentLoaded", () => {
     function construirHorarios(ocupadasArr) {
         contenedorHorarios.innerHTML = "";
 
-        const horas = generarHoras(8, 23);
+        // *** CAMBIO IMPORTANTE ***
+        const horas = generarHoras(window.rangoInicio, window.rangoFin);
 
-        horas.forEach(hora => {
-            let ocupado = ocupadasArr.some(res =>
-                timeToMinutes(hora + ":00") >= timeToMinutes(res.hora_inicio) &&
-                timeToMinutes(hora + ":00") < timeToMinutes(res.hora_final)
-            );
+        horas.forEach(h => { // ← cambiamos el nombre del parámetro a "h"
+            const horaLabel = h.label; // texto que se muestra (ej. "00:00")
+            const slotMin = h.value;   // valor lógico (en minutos, puede ser >1440)
 
+            // ---- 1) Detectar ocupación ----
+            let ocupado = ocupadasArr.some(res => {
+                const [resInicio, resFin] = intervalMinutes(res.hora_inicio, res.hora_final);
+
+                const slotMinNormalized =
+                    (slotMin < resInicio && resFin > 1440) ? slotMin + 1440 : slotMin;
+
+                return (slotMinNormalized >= resInicio) && (slotMinNormalized < resFin);
+            });
+
+            const hoy = new Date();
+            const hoySinHora = new Date();
+            hoySinHora.setHours(0, 0, 0, 0);
+
+            const fechaSel = crearFechaLocal(fechaActual.value);
+            fechaSel.setHours(0, 0, 0, 0);
+
+            const esHoy = fechaSel.getTime() === hoySinHora.getTime();
+            const esFechaPasada = fechaSel.getTime() < hoySinHora.getTime();
+
+            let bloqueable = true;
+            let isPast = false;
+
+            if (esHoy) {
+                const nowMin = hoy.getHours() * 60 + hoy.getMinutes();
+                const cruzaMedianoche = window.rangoFin < window.rangoInicio;
+
+                let slotRef = slotMin;
+                let nowRef = nowMin;
+
+                if (cruzaMedianoche && (slotMin / 60) <= window.rangoFin) {
+                    slotRef += 1440; // slot pertenece al “día siguiente”
+                }
+
+                if (cruzaMedianoche && hoy.getHours() <= window.rangoFin) {
+                    nowRef += 1440; // hora actual también pertenece al día siguiente
+                }
+
+                if (slotRef < nowRef) {
+                    isPast = true;
+                }
+
+                const currentHourStart = hoy.getHours() * 60;
+                const isCurrentHour = slotMin === currentHourStart;
+
+                if (isCurrentHour) {
+                    const minutosTranscurridos = nowMin - currentHourStart;
+                    const minutosRestantes = 60 - minutosTranscurridos;
+
+                    if (minutosRestantes < 30) {
+                        isPast = true;
+                    } else {
+                        bloqueable = !ocupado;
+                    }
+                } else if (isPast) {
+                    bloqueable = false;
+                }
+            }
+
+            // ---- FECHA PASADA ----
+            if (esFechaPasada) {
+                let box = document.createElement("div");
+                box.className = "hora-box";
+                box.innerText = horaLabel;
+                box.dataset.hora = horaLabel;
+
+                if (ocupado) {
+                    box.classList.add("hora-ocupada");
+                } else {
+                    box.classList.add("hora-pasada");
+                }
+
+                contenedorHorarios.appendChild(box);
+                return;
+            }
+
+            // ---- CREAR BOX ----
             let box = document.createElement("div");
             box.className = "hora-box";
-            box.innerText = hora;
+            box.innerText = horaLabel;
+            box.dataset.hora = horaLabel;
 
             if (ocupado) {
                 box.classList.add("hora-ocupada");
-            } else {
-                box.onclick = (e) => abrirModal(e, hora);
+            } else if (isPast && esHoy) {
+                box.classList.add("hora-pasada");
+            } else if (bloqueable) {
+                box.onclick = (e) => abrirModal(e, horaLabel);
             }
 
             contenedorHorarios.appendChild(box);
         });
     }
 
-    function generarHoras(inicio, fin) {
-        let arr = [];
-        for (let h = inicio; h <= fin; h++) {
-            arr.push(h.toString().padStart(2, "0") + ":00");
+
+    // función auxiliar para intervalos
+    function intervalMinutes(horaInicioStr, horaFinStr) {
+        const start = timeToMinutes(horaInicioStr.replace(/:00$/, ''));
+        const finRaw = timeToMinutes(horaFinStr.replace(/:00$/, ''));
+        let fin = finRaw;
+
+        if (fin <= start) {
+            fin = fin + 1440;
         }
+
+        return [start, fin];
+    }
+    
+    // Convierte valores mayores a 23 a su formato reloj (24 -> 00, 25 -> 01, etc.)
+    function horaDisplay(h) {
+        const horaReal = h % 24;
+        return String(horaReal).padStart(2, "0") + ":00";
+    }
+
+    // ---- GENERAR HORAS ----
+    function generarHoras(inicio, fin) {
+        console.log("=== generarHoras() ===");
+        console.log("Inicio recibido:", inicio);
+        console.log("Fin recibido:", fin);
+
+        let arr = [];
+        const cruzaMedianoche = fin < inicio;
+
+        console.log("¿Cruza medianoche?", cruzaMedianoche);
+
+        if (cruzaMedianoche) {
+            for (let h = inicio; h < 24; h++) {
+                arr.push({
+                    label: horaDisplay(h),
+                    value: h * 60,
+                });
+            }
+            for (let h = 24; h <= fin + 24; h++) {
+                arr.push({
+                    label: horaDisplay(h),
+                    value: h * 60,
+                });
+            }
+        } else {
+            for (let h = inicio; h <= fin; h++) {
+                arr.push({
+                    label: horaDisplay(h), // ← aquí usamos la función
+                    value: h * 60,
+                });
+            }
+        }
+
+        console.log("Resultado final de generarHoras():", arr.map(x => x.label).join(", "));
         return arr;
     }
+
+
+
+
+
 
     function timeToMinutes(t) {
         const parts = t.split(':').map(Number);
@@ -238,17 +401,45 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         const opciones = Array.from(duracionSelect.options).slice(1);
+        const inicioMin = timeToMinutes(hora + ":00");
+
+        // Buscar la próxima hora ocupada (la más cercana después del inicio)
+        let proximaOcupada = null;
+        ocupadas.forEach(res => {
+            const [resInicio, resFin] = intervalMinutes(res.hora_inicio, res.hora_final);
+            if (resInicio > inicioMin) {
+                if (proximaOcupada === null || resInicio < proximaOcupada) {
+                    proximaOcupada = resInicio;
+                }
+            }
+        });
+
         opciones.forEach(opt => {
             const durHoras = parseInt(opt.dataset.duracion || "0", 10);
             if (!durHoras) return;
 
-            const inicioMin = timeToMinutes(hora + ":00");
             const finMin = inicioMin + durHoras * 60;
 
+            // Desactivar si excede medianoche
+            if (finMin > 1440) {
+                opt.disabled = true;
+                opt.style.color = "#999";
+                opt.style.backgroundColor = "#f8f9fa";
+                return;
+            }
+
+            // Desactivar si llega hasta o pasa la próxima ocupada
+            if (proximaOcupada && finMin > proximaOcupada) {
+                opt.disabled = true;
+                opt.style.color = "#999";
+                opt.style.backgroundColor = "#f8f9fa";
+                return;
+            }
+
+            // También comprobar solapamiento total (por seguridad)
             const solapa = ocupadas.some(res => {
-                const resInicio = timeToMinutes(res.hora_inicio);
-                const resFin = timeToMinutes(res.hora_final);
-                return (inicioMin < resFin) && (finMin > resInicio);
+                const [resInicio, resFin] = intervalMinutes(res.hora_inicio, res.hora_final);
+                return (inicioMin < resFin && finMin > resInicio);
             });
 
             if (solapa) {
@@ -258,6 +449,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
+
         duracionSelect.value = "";
         inputDuracion.value = "";
     }
@@ -266,11 +458,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     duracionSelect.onchange = () => {
         let sel = duracionSelect.value;
+
         if (sel) {
             inputDuracion.value = sel;
+
+            const dur = parseInt(sel, 10);
+            marcarHorasSeleccionadas(inputHora.value, dur);
+
             modal.style.display = "none";
+
+            // 🔥 ENVÍA EL FORMULARIO AUTOMÁTICAMENTE
+            //document.getElementById("formReserva").submit();//
         }
     };
+
 
     // ---- CAMBIO DE FECHA ----
     btnPrev.onclick = () => cambiarDia(-1);
@@ -278,7 +479,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function crearFechaLocal(str) {
         const [y, m, d] = str.split("-").map(Number);
-        return new Date(y, m - 1, d); // ← esto crea fecha LOCAL
+        return new Date(y, m - 1, d);
     }
 
     function cambiarDia(d) {
@@ -294,9 +495,7 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href = `?fecha=${nueva}`;
     }
 
-
-
-    // ---- CONTROL VISUAL DE BOTÓN "<" ----
+    // ---- CONTROL BOTÓN "<" ----
     function actualizarBotonPrev() {
         const hoy = new Date();
         hoy.setHours(0,0,0,0);
@@ -315,16 +514,31 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-
     actualizarBotonPrev();
 
-    // --- Selector de Fecha ---
+    // ---- Selector de fecha ----
     selectorFecha.addEventListener("change", () => {
         if (!selectorFecha.value) return;
-
         window.location.href = `?fecha=${selectorFecha.value}`;
     });
 
+    function marcarHorasSeleccionadas(horaInicio, duracionHoras) {
+        document.querySelectorAll(".hora-box").forEach(b => {
+            b.classList.remove("hora-seleccionada");
+        });
+
+        const inicioMin = timeToMinutes(horaInicio + ":00");
+
+        for (let i = 0; i < duracionHoras; i++) {
+            const currentMin = inicioMin + (i * 60);
+            const h = Math.floor(currentMin / 60);
+
+            const horaStr = String(h).padStart(2, "0") + ":00";
+
+            const box = document.querySelector(`.hora-box[data-hora='${horaStr}']`);
+            if (box) box.classList.add("hora-seleccionada");
+        }
+    }
 
 });
 </script>

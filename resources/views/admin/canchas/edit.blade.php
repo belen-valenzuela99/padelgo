@@ -29,6 +29,10 @@
             {{ old('descripcion', $cancha->descripcion) }}
         </textarea>
         </div>
+        <div class="mb-3">
+            <label for="duracion_maxima" class="form-label">Hora Maxima de Reserva</label>
+            <input type="text" class="form-control" id="duracion_maxima" name="duracion_maxima" value="{{ old('duracion_maxima', $cancha->duracion_maxima) }}" required>
+        </div>
 
 
         <div class="mb-3">

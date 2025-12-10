@@ -19,12 +19,13 @@ class Club extends Model
     ];
 
     // Relación ejemplo: una categoría puede tener muchas partidas
-    public function canchas()
-    {
-        return $this->hasMany(Canchas::class, "id_club");
-    }
+public function canchas()
+{
+    return $this->hasMany(Canchas::class, 'id_club')->where('is_active', true);
+}
+
         
-     public function gestor()
+    public function gestor()
     {
         return $this->belongsTo(User::class, 'id_user');
     }

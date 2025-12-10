@@ -20,6 +20,11 @@
             <label for="nombre" class="form-label">Nombre</label>
             <input type="text" class="form-control" id="nombre" name="nombre" value="{{ old('nombre') }}" required>
         </div>
+        <div class="mb-3">
+            <label for="duracion_maxima" class="form-label">Hora Maxima de Reserva</label>
+            <input type="text" class="form-control" id="duracion_maxima" name="duracion_maxima" value="{{ old('duracion_maxima') }}" required>
+        </div>
+
 
 
         <div class="mb-3">

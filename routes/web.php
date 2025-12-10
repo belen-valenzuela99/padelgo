@@ -8,6 +8,9 @@ use App\Http\Controllers\ClubController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\TipoReservacionController;
 use App\Http\Controllers\ReservacionController;
+use App\Http\Controllers\CanchaTipoReservacionController;
+use App\Http\Controllers\Admin\UserAdminController;
+
 
 Route::get('/reservaPrueba', [ReservaController::class, 'index'])
      ->name('reserva.index');
@@ -34,6 +37,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     // Se agrega la ruta dentro del middleware del admin o del jugador, 
     Route::resource('clubes', ClubController::class)->parameters(['clubes' => 'club']);
 
+    Route::resource('users', UserAdminController::class)->names('admin.users');
 });
 
 // ================== DASHBOARD JUGADOR ==================
@@ -41,18 +45,39 @@ Route::middleware(['auth', 'role:jugador'])->prefix('jugador')->group(function (
     Route::get('/dashboard', function () {
         return view('jugador.dashboard');
     })->name('jugador.dashboard');
+    // Listado de reservas del jugador
+    Route::get('/reservaciones', [FrontendController::class, 'misReservaciones'])
+        ->name('jugador.reservaciones.index');
+        
+   // ================== ================== Route::post('/reservacion-ticket', [FrontendController::class, 'registrarReservacion'])->name('reservar.store');
+    Route::get('/confirmar-compra/{reservacion}', [FrontendController::class, 'confirmarCompra'])
+    ->name('jugador.reservar.confirmar');
+    Route::post('/pre-reservacion', [FrontendController::class, 'prepararReservacion'])
+    ->name('jugador.reservar.preparar');
+    Route::post('/reservacion-confirmada', [FrontendController::class, 'registrarReservacion'])
+    ->name('jugador.reservar.confirmada');
 
-    Route::post('/reservacion-ticket', [FrontendController::class, 'registrarReservacion'])->name('reservar.store');
-    
+
+
 });
+Route::patch('/canchas/{id}/activar', [CanchasController::class, 'activar'])
+    ->name('canchas.activar');
+
+Route::patch('/canchas/{id}/desactivar', [CanchasController::class, 'desactivar'])
+    ->name('canchas.desactivar');
+
+
 
 Route::middleware(['auth', 'role:gestor'])->prefix('gestor')->group(function () {
-     Route::get('/dashboard', function () {
+    Route::get('/dashboard', function () {
         return view('gestor.dashboard');
     })->name('gestor.dashboard');
     Route::resource('canchas', CanchasController::class);
     Route::resource('tiporeservacion', TipoReservacionController::class);
     Route::resource('reservacions', ReservacionController::class);
+    Route::get('/canchas/{id}/tipos', [CanchaTipoReservacionController::class, 'edit'])->name('canchas.tipos.edit');
+    Route::put('/canchas/{id}/tipos', [CanchaTipoReservacionController::class, 'update'])->name('canchas.tipos.update');
+
 });
 
 // ================== PERFIL ==================

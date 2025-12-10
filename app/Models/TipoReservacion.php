@@ -12,7 +12,8 @@ class TipoReservacion extends Model
 
     // Campos que se pueden asignar masivamente
     protected $fillable = [
-        'franja_horaria',
+        'hora_inicio',
+        'hora_fin',
         'precio',
     ];
 
@@ -21,5 +22,14 @@ class TipoReservacion extends Model
     //{
     //    return $this->hasMany(Partida::class);
     //}
+    public function canchas()
+    {
+        return $this->belongsToMany(Canchas::class, 'cancha_tipo_reservacion', 'tipo_reservacion_id', 'cancha_id')
+                    ->withPivot('precio', 'activo')
+                    ->withTimestamps();
+    }
+
+
+
 
 }

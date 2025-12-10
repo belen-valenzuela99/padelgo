@@ -1,0 +1,29 @@
+cambios y modificaciones
+
+-En canchas poner descricion dentro de frontend.canchas (x)
+-en http://127.0.0.1:8000/reservar/ que salga la información de canchas en reservaciones (x)
+-ver tema de horario local argentina (x)
+-en ticket descargar como pdf o enviar a whatsapp (x)
+-que el jugador pueda ver todas sus reservas. PENDIENTES, compartir? (x)
+-botón de otra reserva, vuelve a inicio donde están clubess (x)
+-Tal vez, imitar la apariencia de reservas de atcsports (x)
+
+-crear pantalla de confirmación de compra parecido al atc https://atcsports.io/checkout/437?day=2025-11-23&court=3480&sport_id=7&duration=120&start=21%3A00&end=&is_beelup=false. (x)
+-agregar duración máxima en canchas, reemplazo del select de duración que viene de tipo_reservacion  (x)
+
+-validar reservas por fecha/horario, si se pasa la fecha que cambie su estado (x)
+-validar no eliminar cancha si tiene alguna reservación asociada  (x)
+-quitar eliminación publica en canchas, manejar publicar/no publicar (x)
+
+-franjas horarias: Horarios por dia y noche. Select de hora inicio hora final y establecer precio por hora. Ese precio por hora se multiplica por las horas seleccionadas por el usuario al hacer una reserva. (x)
+
+-poner precio en reservaciones (X)
+-crud de asignar roles a los usuarios (X)
+
+
+
+Comandos para correr el sistema:
+
+php artisan serve
+npm run dev
+php artisan schedule:work
