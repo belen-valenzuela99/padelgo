@@ -87,6 +87,26 @@ flex-direction: column;
 justify-content: space-between;
 }
 
+.card {
+    border-radius: 14px;
+    overflow: hidden;
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0,0,0,.12);
+}
+
+.contenedor_imagen-card img {
+    transition: transform .3s ease;
+}
+
+.card:hover .contenedor_imagen-card img {
+    transform: scale(1.06);
+}
+
+
 /* BOTÓN */
 .btn-primary {
     background-color: var(--pg-blue);
@@ -197,6 +217,7 @@ justify-content: space-between;
     font-size: 1.1rem;
 }
 
+
 /* SECCION DEL CARRUSEL */
 .carousel-item{
     height: 500px;
@@ -257,6 +278,13 @@ justify-content: space-between;
     object-fit: cover;
     height: 100%;
 }
+
+.separador {
+    height: 40px;
+    background: linear-gradient(to bottom, transparent, #deeefc);
+    margin-bottom: 20px;
+}
+
 
 /* FOOTER*/
 .main-body{
@@ -384,4 +412,159 @@ button.btn-success:hover {
 /* Links */
 a.text-white:hover {
     color: #C3FF00 !important;
+}
+
+/* VISTA CLUB*/
+/* ——— ESTILOS GENERALES ——— */
+
+.titulo-club {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: #032D3C;
+}
+
+.club-direccion {
+    font-size: 1.1rem;
+    color: #5a8571;
+}
+
+/* Badges elegantes */
+.badge-club {
+    background:#c8ffee;
+    color: #123846;
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* Separador */
+.separador {
+    width: 90px;
+    height: 4px;
+    background: #a5f8ba;
+    border-radius: 10px;
+    margin: 0 auto;
+}
+
+/* ——— ESTILO DE LAS CARDS DE CANCHAS ——— */
+
+.cancha-card {
+    background: hsl(0, 0%, 100%);
+    border-radius: 18px;
+    padding: 22px;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.07);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    height: 100%;
+}
+
+.cancha-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 28px rgba(187, 92, 92, 0.12);
+}
+
+.cancha-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #06a00e;
+}
+
+/* Badge de cada cancha */
+.badge-cancha {
+    background: #d6f3e3;
+    color: #000000;
+    padding: 5px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.cancha-desc {
+    font-size: 0.95rem;
+    color: #0b104e;
+}
+
+/* Botón principal */
+.boton-reserva {
+    background-color: #d6ffe4;
+    color: #032D3C;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 10px 0;
+    border: none;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.boton-reserva:hover {
+    background-color: #9ad8fc;
+    transform: scale(1.02);
+}
+
+/* Imagen Club */
+.club-image-wrapper {
+    max-width: 330px;
+    margin: 0 auto;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.club-image {
+    width: 100%;
+    border-radius: 20px;
+    transition: transform 0.4s ease;
+}
+
+.club-image:hover {
+    transform: scale(1.03);
+}
+
+/* --- HERO DEL CLUB --- */
+
+.club-hero {
+    position: relative;
+    width: 100%;
+    height: 380px; /* Puedes subirlo a 450px si lo querés más alto */
+    overflow: hidden;
+    border-radius: 0; /* Por si querés bordes rectos como el carrusel */
+}
+
+.club-hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;      /* Clave para cubrir la sección completa */
+    filter: brightness(0.85);
+    z-index: 1;
+}
+
+/* Degradado elegante */
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.1),
+        rgba(0, 0, 0, 0.55)
+    );
+    z-index: 2;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 3;
+    color: white;
+    text-shadow: 0px 2px 10px rgba(0,0,0,0.4);
+}
+
+.club-hero-title {
+    font-size: 2.6rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.club-hero-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
 }

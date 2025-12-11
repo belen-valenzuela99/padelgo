@@ -121,5 +121,6 @@ public function destroy(Club $club)
 
         return redirect()->route('clubes.index')->with('success', 'Club eliminado correctamente.');
     }
+    
 
 }
