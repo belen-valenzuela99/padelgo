@@ -27,3 +27,24 @@ Comandos para correr el sistema:
 php artisan serve
 npm run dev
 php artisan schedule:work
+
+
+
+LISTA PARA FEBRERO
+- Ver solamente los horarios disponibles
+- MODULO DE REPORTE ESTADISTICO (ADMIN O DUEÑO DEL CLUB):   
+   Total de reservas por mes
+   Canchas más reservadas
+   Ingresos totales
+- Fecha de Abono no validada en lista de abonos
+- Calendario para crear abonos
+- Filtro por fecha y hora, y que se vean los horarios y precio. https://atcsports.io/results?horario=02%3A00&tipoDeporte=7&dia=2026-01-18&placeId=6eqeh1jbg&locationName=Formosa%2C+Argentina 
+- Validar la tarjeta
+- Agregar mp 
+- Agregar el mapa de ubicacion en los clubes. 
+- Poner informacion de contacto de cada club. 
+- Que cada cancha tenga un mismo horario (7:00 a 2:00 am) 
+- Cambiar el nombre del modulo de tipo de reservacion y que solo defina el tipo de precio por horario. 
+- Agregar en el dashboard de dueño del club, los graficos de los reportes. 
+- Agregar los detalles del club, como los servicios, diferentes horarios segun los dias.
+- Agregar modulo de club, para el gestor. (Para modificar la informacion del club, como el horario y que servicios)
