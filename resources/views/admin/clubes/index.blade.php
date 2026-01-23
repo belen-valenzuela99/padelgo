@@ -20,6 +20,7 @@
                 <th>Gestor</th>
                 <th>Descripción</th>
                 <th>Direccion</th>
+                <th>Enlace de GoogleMaps</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -39,6 +40,14 @@
                 <td>{{ $club->id_user }}</td>
                 <td>{{ $club->descripcion }}</td>
                 <td>{{ $club->direccion }}</td>
+                <td>
+                    @if($club->mapa)
+                            <a href="{{ $club->mapa }}" target="_blank">Ubicación</a>
+                        @else
+                            Sin ubicación
+                        @endif
+                    </td>
+
                 <td>
                     <a href="{{ route('clubes.edit', $club->id) }}" class="btn btn-sm btn-warning">Editar</a>
 

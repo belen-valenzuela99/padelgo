@@ -16,6 +16,7 @@ class Club extends Model
         'nombre',
         'img',
         'direccion',
+        'mapa',
     ];
 
     // Relación ejemplo: una categoría puede tener muchas partidas

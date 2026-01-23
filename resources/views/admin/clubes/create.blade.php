@@ -1,6 +1,7 @@
 @extends('layouts.main')
 
 @section('content')
+
 <div class="container py-4">
     <h2 class="mb-4">Crear Club</h2>
 
@@ -50,9 +51,62 @@
             <input type="file" class="form-control" id="img" name="img" accept="image/*">
         </div>
 
+        <div class="mb-3">
+    <label class="form-label">Buscar ubicación en Google Maps</label>
+    <div class="input-group">
+        <input type="text" id="busqueda_mapa" class="form-control" placeholder="Ej: Full Padel Outdoor, Mendoza">
+        <button type="button" class="btn btn-outline-primary" onclick="buscarMapa()">Buscar</button>
+    </div>
+</div>
+
+{{-- Campo oculto que se guarda en la BD --}}
+<input type="hidden" id="mapa" name="mapa">
+
+<div class="mb-3">
+    <label class="form-label">Vista previa del mapa</label>
+    <div class="border rounded p-2">
+        <iframe 
+            id="iframe_mapa"
+            width="100%" 
+            height="300" 
+            style="border:0;" 
+            loading="lazy"
+            allowfullscreen>
+        </iframe>
+    </div>
+</div>
+
+
 
         <button type="submit" class="btn btn-primary">Guardar</button>
         <a href="{{ route('clubes.index') }}" class="btn btn-secondary ms-2">Cancelar</a>
     </form>
 </div>
+
+<script>
+function buscarMapa() {
+    let lugar = document.getElementById('busqueda_mapa').value;
+
+    if (lugar.trim() === '') {
+        alert('Escribí una ubicación primero');
+        return;
+    }
+
+    // Creamos un link EMBED de Google Maps usando búsqueda
+    let url = "https://www.google.com/maps?q=" + encodeURIComponent(lugar) + "&output=embed";
+
+    // Mostramos el mapa
+    document.getElementById('iframe_mapa').src = url;
+
+    // Guardamos el link en el input oculto para enviar al backend
+    document.getElementById('mapa').value = url;
+}
+</script>
+
+
+
+
+
+
+
 @endsection

@@ -36,6 +36,7 @@ class ClubController extends Controller
             'img' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
             'id_user' => 'nullable|exists:users,id',
             'descrpcion' => 'nullable|string',
+            'mapa' => 'nullable|string',
         ]);        
 
         $data = $request->all();
@@ -81,6 +82,7 @@ public function update(Request $request, Club $club)
             'img' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,svg|max:2048',
             'id_user' => 'nullable|exists:users,id',
             'descrpcion' => 'nullable|string',
+            'mapa' => 'nullable|string',
         ]);
         
 
