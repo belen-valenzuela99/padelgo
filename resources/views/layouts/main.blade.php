@@ -70,6 +70,9 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('abonos.index') }}">Abonos</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('clubes.index') }}">Mi Club</a>
+                            </li>
 
                         @endif
                         <li class="nav-item dropdown">
