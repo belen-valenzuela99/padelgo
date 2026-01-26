@@ -159,18 +159,51 @@ document.addEventListener("DOMContentLoaded", function () {
     // Validación final
     form.addEventListener('submit', function (e) {
 
+        // Tarjeta
         if (tarjeta.value.replace(/\s/g, '').length !== 16) {
             alert("El número de tarjeta debe tener 16 dígitos.");
             e.preventDefault();
             return;
         }
 
+        // Vencimiento formato correcto
         if (!/^\d{2}\/\d{2}$/.test(vencimiento.value)) {
             alert("Formato de vencimiento inválido. Use MM/AA.");
             e.preventDefault();
             return;
         }
 
+        const partes = vencimiento.value.split('/');
+        const mes = parseInt(partes[0]);
+        const anio = parseInt(partes[1]);
+
+        // Mes válido 01–12
+        if (mes < 1 || mes > 12) {
+            alert("El mes debe estar entre 01 y 12.");
+            e.preventDefault();
+            return;
+        }
+
+        // Fecha actual
+        const fechaActual = new Date();
+        const mesActual = fechaActual.getMonth() + 1; // 1–12
+        const anioActual = fechaActual.getFullYear() % 100; // últimos 2 dígitos
+
+        // Año inválido
+        if (anio < anioActual) {
+            alert("La tarjeta está vencida (año inválido).");
+            e.preventDefault();
+            return;
+        }
+
+        // Mismo año pero mes vencido
+        if (anio === anioActual && mes < mesActual) {
+            alert("La tarjeta está vencida (mes inválido).");
+            e.preventDefault();
+            return;
+        }
+
+        // CVV
         if (cvv.value.length !== 3) {
             alert("El CVV debe tener 3 dígitos.");
             e.preventDefault();
@@ -181,5 +214,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 </script>
+
 
 @endsection

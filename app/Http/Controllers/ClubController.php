@@ -7,27 +7,36 @@ use Illuminate\Http\Request;
 use App\Models\User;
 class ClubController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
+    
+   public function index()
+{
+    if (auth()->user()->role === 'admin') {
+        // Admin ve todos los clubes
         $clubes = Club::all();
-        return view('admin.clubes.index', compact('clubes'));
+    } else {
+        // Gestor ve solo sus clubes
+        $clubes = Club::where('id_user', auth()->id())->get();
     }
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        $gestores = User::where('role', 'gestor')->get();
+
+    return view('admin.clubes.index', compact('clubes'));
+}
+
+
+    
+   public function create()
+{
+    // Solo admin puede crear clubes
+    if (auth()->user()->role !== 'admin') {
+        abort(403, 'No tenés permiso para crear clubes.');
+    }
+
+    $gestores = User::where('role', 'gestor')->get();
 
     return view('admin.clubes.create', compact('gestores'));
-    }
+}
 
-    /**
-     * Store a newly created resource in storage.
-     */
+
+    
     public function store(Request $request)
     {
         $request->validate([
@@ -113,6 +122,9 @@ public function update(Request $request, Club $club)
      */
 public function destroy(Club $club)
     {
+         if (auth()->user()->role !== 'admin') {
+            abort(403, 'No tenés permiso para crear clubes.');
+        }
         // Borrar la imagen si existe
         if ($club->img && file_exists(public_path($club->img))) {
             unlink(public_path($club->img));

@@ -37,7 +37,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
         return view('admin.dashboard');
     })->name('admin.dashboard');
     // Se agrega la ruta dentro del middleware del admin o del jugador, 
-    Route::resource('clubes', ClubController::class)->parameters(['clubes' => 'club']);
+    // Route::resource('clubes', ClubController::class)->parameters(['clubes' => 'club']);
 
     Route::resource('users', UserAdminController::class)->names('admin.users');
 });
@@ -69,7 +69,7 @@ Route::patch('/canchas/{id}/desactivar', [CanchasController::class, 'desactivar'
     ->name('canchas.desactivar');
 
 
-
+// ================== DASHBOARD GESTOR ==================
 Route::middleware(['auth', 'role:gestor'])->prefix('gestor')->group(function () {
     Route::get('/dashboard', function () {
         return view('gestor.dashboard');
@@ -97,6 +97,11 @@ Route::get('/club/{id}', [FrontendController::class, 'clubDetalle'])->name('club
 Route::get('/reservar/{id}', [FrontendController::class, 'confirmacionReserva'])->name('confirmacionReserva');
 // Ajax para consultar horas ocupadas
 Route::get('/horas-ocupadas/{cancha}/{fecha}', [FrontendController::class, 'horasOcupadas']);
+
+// ================== GESTOR Y ADMIN ==================
+Route::middleware(['auth', 'role:admin,gestor'])->group(function () {
+    Route::resource('clubes', ClubController::class)->parameters(['clubes' => 'club']);
+});
 
 
 

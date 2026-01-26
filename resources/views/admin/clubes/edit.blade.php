@@ -30,6 +30,7 @@
         </textarea>
     </div>
 
+    @if (auth()->user()->role === 'admin')
     <div class="mb-3">
         <label for="id_user" class="form-label">Gestor del Club</label>
         <select class="form-select" id="id_user" name="id_user">
@@ -42,7 +43,12 @@
                 </option>
             @endforeach
         </select>
+        
     </div>
+    @else
+
+    @endif
+    
         <div class="mb-3">
             <label for="direccion" class="form-label">Direccion</label>
             <textarea class="form-control" id="direccion" name="direccion" rows="3">{{ old('direccion', $club->direccion) }}</textarea>
