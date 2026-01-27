@@ -26,9 +26,20 @@ public function canchas()
 }
 
         
-    public function gestor()
+public function gestor()
     {
         return $this->belongsTo(User::class, 'id_user');
     }
+
+public function redesSociales()
+{
+    return $this->belongsToMany(
+        RedSocial::class,
+        'club_red_social',
+        'id_club',
+        'id_red_social'
+    );
+}
+
         
 }

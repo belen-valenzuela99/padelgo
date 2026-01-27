@@ -11,7 +11,7 @@ use App\Http\Controllers\ReservacionController;
 use App\Http\Controllers\CanchaTipoReservacionController;
 use App\Http\Controllers\Admin\UserAdminController; 
 use App\Http\Controllers\AbonoController;    
-
+use App\Http\Controllers\RedSocialController;
 
 
 Route::get('/reservaPrueba', [ReservaController::class, 'index'])
@@ -38,7 +38,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     })->name('admin.dashboard');
     // Se agrega la ruta dentro del middleware del admin o del jugador, 
     // Route::resource('clubes', ClubController::class)->parameters(['clubes' => 'club']);
-
+    Route::resource('redes_sociales', RedSocialController::class);
     Route::resource('users', UserAdminController::class)->names('admin.users');
 });
 
