@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Club;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\RedSocial;
+use App\Models\ClubRedSocial;
 class ClubController extends Controller
 {
     
@@ -74,11 +76,22 @@ class ClubController extends Controller
 
 
     public function edit(Club $club)
-    {
-        $gestores = User::where('role', 'gestor')->get();
+{
+    $gestores = User::where('role', 'gestor')->get();
+    $redesSociales = RedSocial::all();
 
-    return view('admin.clubes.edit', compact('club', 'gestores'));
-    }
+    $redesClub = ClubRedSocial::where('id_club', $club->id)
+        ->pluck('url_red', 'id_red_social');
+
+    return view('admin.clubes.edit', compact(
+        'club',
+        'gestores',
+        'redesSociales',
+        'redesClub'
+    ));
+}
+
+    
 
     /**
      * Update the specified resource in storage.

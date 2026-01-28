@@ -19,7 +19,6 @@
 <tr>
 <th>ID</th>
 <th>Nombre</th>
-<th>URL</th>
 <th>Imagen</th>
 <th>Acciones</th>
 </tr>
@@ -29,7 +28,6 @@
 <tr>
 <td>{{ $red->id }}</td>
 <td>{{ $red->nombre }}</td>
-<td>{{ $red->url_red }}</td>
 <td>
 @if($red->img)
 <img src="{{ asset($red->img) }}" width="40">

@@ -27,7 +27,7 @@ public function store(Request $request)
 {
     $request->validate([
         'nombre' => 'required|string|max:100',
-        'url_red' => 'required|string|max:255',
+        //'url_red' => 'required|string|max:255',
         'img' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
     ]);
 
@@ -63,7 +63,7 @@ public function update(Request $request, $id)
 
     $request->validate([
         'nombre' => 'required|string|max:100',
-        'url_red' => 'required|string|max:255',
+        //'url_red' => 'required|string|max:255',
         'img' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
     ]);
 
@@ -79,7 +79,7 @@ public function update(Request $request, $id)
 
     $red->update($data);
 
-    return redirect()->route('admin.redes_sociales.index')
+    return redirect()->route('redes_sociales.index')
         ->with('success', 'Red social actualizada correctamente');
 }
 

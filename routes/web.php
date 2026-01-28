@@ -12,6 +12,7 @@ use App\Http\Controllers\CanchaTipoReservacionController;
 use App\Http\Controllers\Admin\UserAdminController; 
 use App\Http\Controllers\AbonoController;    
 use App\Http\Controllers\RedSocialController;
+use App\Http\Controllers\ClubRedSocialController;
 
 
 Route::get('/reservaPrueba', [ReservaController::class, 'index'])
@@ -38,7 +39,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     })->name('admin.dashboard');
     // Se agrega la ruta dentro del middleware del admin o del jugador, 
     // Route::resource('clubes', ClubController::class)->parameters(['clubes' => 'club']);
-    Route::resource('redes_sociales', RedSocialController::class);
+    Route::resource('redes_sociales', RedSocialController::class)
+    ->except(['show'])
+    ->names('redes_sociales');
+
     Route::resource('users', UserAdminController::class)->names('admin.users');
 });
 
@@ -80,6 +84,10 @@ Route::middleware(['auth', 'role:gestor'])->prefix('gestor')->group(function () 
     Route::get('/canchas/{id}/tipos', [CanchaTipoReservacionController::class, 'edit'])->name('canchas.tipos.edit');
     Route::put('/canchas/{id}/tipos', [CanchaTipoReservacionController::class, 'update'])->name('canchas.tipos.update');
     Route::resource('abonos', AbonoController::class);
+    Route::post('club-red-social',[ClubRedSocialController::class, 'store'])->name('club_red_social.store');
+    Route::post('/club-redes/sync', [ClubRedSocialController::class, 'syncRedes'])->name('club_red_social.sync');
+
+
 
 });
 

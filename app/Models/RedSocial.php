@@ -13,7 +13,7 @@ class RedSocial extends Model
 
     protected $fillable = [
         'nombre',
-        'url_red',
+        //'url_red',
         'img',
     ];
 

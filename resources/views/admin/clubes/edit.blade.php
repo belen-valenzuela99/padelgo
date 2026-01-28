@@ -101,6 +101,67 @@
         <button type="submit" class="btn btn-primary">Actualizar</button>
         <a href="{{ route('clubes.index') }}" class="btn btn-secondary ms-2">Cancelar</a>
     </form>
+
+ <h4 class="mt-4 mb-3">Redes Sociales del Club</h4>
+<form action="{{ route('club_red_social.sync') }}" method="POST">
+
+    @csrf
+
+    <input type="hidden" name="id_club" value="{{ $club->id }}">
+
+    @foreach($redesSociales as $red)
+        @php
+            $valor = old('redes.' . $red->id, $redesClub[$red->id] ?? '');
+            $checked = !empty($valor);
+        @endphp
+
+        <div class="row align-items-center mb-3 p-2 border rounded">
+            {{-- Checkbox --}}
+            <div class="col-md-1 text-center">
+                <input
+                    type="checkbox"
+                    class="form-check-input toggle-red"
+                    data-target="red-{{ $red->id }}"
+                    {{ $checked ? 'checked' : '' }}
+                >
+            </div>
+
+            {{-- Imagen --}}
+            <div class="col-md-1 text-center">
+                <img src="{{ asset($red->img) }}"
+                     alt="{{ $red->nombre }}"
+                     class="img-fluid"
+                     style="max-height: 35px;">
+            </div>
+
+            {{-- Nombre --}}
+            <div class="col-md-3">
+                <label class="form-label fw-semibold mb-0">
+                    {{ $red->nombre }}
+                </label>
+            </div>
+
+            {{-- Input --}}
+            <div class="col-md-7">
+                <input
+                    type="url"
+                    class="form-control"
+                    id="red-{{ $red->id }}"
+                    name="redes[{{ $red->id }}]"
+                    placeholder="URL de {{ $red->nombre }}"
+                    value="{{ $valor }}"
+                    {{ $checked ? '' : 'disabled' }}
+                >
+            </div>
+        </div>
+    @endforeach
+
+    <button type="submit" class="btn btn-success mt-3">
+        Guardar redes sociales
+    </button>
+</form>
+
+
 </div>
 <script>
 function buscarMapa() {
@@ -119,6 +180,16 @@ function buscarMapa() {
     // Guarda el link para enviar al backend
     document.getElementById('mapa').value = url;
 }
+
+
+    document.querySelectorAll('.toggle-red').forEach(checkbox => {
+        checkbox.addEventListener('change', function () {
+            const input = document.getElementById(this.dataset.target);
+            input.disabled = !this.checked;
+        });
+    });
+
+
 </script>
 
 @endsection
