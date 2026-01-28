@@ -11,7 +11,9 @@ use App\Http\Controllers\ReservacionController;
 use App\Http\Controllers\CanchaTipoReservacionController;
 use App\Http\Controllers\Admin\UserAdminController; 
 use App\Http\Controllers\AbonoController;    
-
+use App\Http\Controllers\RedSocialController;
+use App\Http\Controllers\ClubRedSocialController;
+use App\Http\Controllers\ClubServicioController;
 
 
 Route::get('/reservaPrueba', [ReservaController::class, 'index'])
@@ -37,7 +39,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
         return view('admin.dashboard');
     })->name('admin.dashboard');
     // Se agrega la ruta dentro del middleware del admin o del jugador, 
-    Route::resource('clubes', ClubController::class)->parameters(['clubes' => 'club']);
+    // Route::resource('clubes', ClubController::class)->parameters(['clubes' => 'club']);
+    Route::resource('redes_sociales', RedSocialController::class)
+    ->except(['show'])
+    ->names('redes_sociales');
 
     Route::resource('users', UserAdminController::class)->names('admin.users');
 });
@@ -69,7 +74,7 @@ Route::patch('/canchas/{id}/desactivar', [CanchasController::class, 'desactivar'
     ->name('canchas.desactivar');
 
 
-
+// ================== DASHBOARD GESTOR ==================
 Route::middleware(['auth', 'role:gestor'])->prefix('gestor')->group(function () {
     Route::get('/dashboard', function () {
         return view('gestor.dashboard');
@@ -80,6 +85,11 @@ Route::middleware(['auth', 'role:gestor'])->prefix('gestor')->group(function () 
     Route::get('/canchas/{id}/tipos', [CanchaTipoReservacionController::class, 'edit'])->name('canchas.tipos.edit');
     Route::put('/canchas/{id}/tipos', [CanchaTipoReservacionController::class, 'update'])->name('canchas.tipos.update');
     Route::resource('abonos', AbonoController::class);
+   //Route::post('club-red-social',[ClubRedSocialController::class, 'store'])->name('club_red_social.store');
+    //Route::post('/club-redes/sync', [ClubRedSocialController::class, 'syncRedes'])->name('club_red_social.sync');
+    
+
+
 
 });
 
@@ -97,6 +107,14 @@ Route::get('/club/{id}', [FrontendController::class, 'clubDetalle'])->name('club
 Route::get('/reservar/{id}', [FrontendController::class, 'confirmacionReserva'])->name('confirmacionReserva');
 // Ajax para consultar horas ocupadas
 Route::get('/horas-ocupadas/{cancha}/{fecha}', [FrontendController::class, 'horasOcupadas']);
+
+// ================== GESTOR Y ADMIN ==================
+Route::middleware(['auth', 'role:admin,gestor'])->group(function () {
+Route::resource('clubes', ClubController::class)->parameters(['clubes' => 'club']);
+Route::post('/club-servicios', [ClubServicioController::class, 'store'])->name('club_servicios.store');
+Route::post('/club-redes/sync', [ClubRedSocialController::class, 'syncRedes'])->name('club_red_social.sync');
+Route::post('club-red-social',[ClubRedSocialController::class, 'store'])->name('club_red_social.store');
+});
 
 
 

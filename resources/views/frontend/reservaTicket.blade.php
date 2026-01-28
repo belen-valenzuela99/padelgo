@@ -6,7 +6,7 @@
 
 <div class="container mx-auto text-center p-6">
 
-    <h1 class="text-2xl font-bold mb-4">Se confirmo tu reserva</h1>
+    <h1 class="text-2xl font-bold mb-4">Se confirmó tu reserva</h1>
     <div>
     </div>
         <div class="">
@@ -53,7 +53,8 @@
         <button class="btn btn-success" onclick="descargarTicket()">
             Descargar Ticket PDF
         </button>
-        <a href="{{route('home')}}" class="btn btn-primary">Volver</a>
+        <a href="{{route('home')}}" class="btn btn-primary">Volver al inicio</a>
+        <a href="{{route('jugador.reservaciones.index')}}" class="btn btn-warning">Ver mis Reservaciones</a>
     </div>
 
         </div>

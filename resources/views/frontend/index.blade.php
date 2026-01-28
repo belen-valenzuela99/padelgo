@@ -48,16 +48,25 @@
 
     </div>
 </section>
+<div class="separador"></div>
+<section class="my-5 text-center">
+    <h2 class="fw-bold">Encontrá tu cancha perfecta</h2>
+    <p class="text-muted">Reservá en segundos, con disponibilidad en tiempo real.</p>
+</section>
+
+
 @endsection
-
-
 
 @section('content')
 
 <div class="container mx-auto text-center p-6">
 
     <h1 class="text-2xl font-bold mb-4">Clubes Disponibles</h1>
-   
+
+    <div class="mb-4 d-flex justify-content-center">
+    <input type="text" id="buscadorClub" class="form-control w-50 shadow-sm"
+           placeholder="Buscar club por nombre o dirección...">
+    </div>
 
     <div class="container_card">
         @forelse($clubes as $club)
@@ -81,6 +90,21 @@
     </div>
 
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const buscador = document.getElementById("buscadorClub");
+    const cards = document.querySelectorAll(".card");
+
+    buscador.addEventListener("input", e => {
+        const valor = e.target.value.toLowerCase();
+        cards.forEach(card => {
+            const texto = card.innerText.toLowerCase();
+            card.style.display = texto.includes(valor) ? "" : "none";
+        });
+    });
+});
+</script>
 
 @endsection
 

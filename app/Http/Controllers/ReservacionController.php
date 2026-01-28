@@ -98,36 +98,22 @@ class ReservacionController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+  public function update(Request $request, $id)
 {
     $reservacion = Reservacion::findOrFail($id);
 
     $request->validate([
-        'fecha' => 'required|date',
-        'hora' => 'required',
-        'cancha_id' => 'required|exists:canchas,id',
-        'id_tipo_reservacion' => 'required|integer',
-        'status' => 'nullable|in:programado,cancelado,turno perdido,turno completado',
+        'status' => 'required|in:programado,cancelado,turno perdido,turno completado',
     ]);
 
-    $fechaReserva = Carbon::parse($request->fecha)->format('Y-m-d');
-    $horaInicio = Carbon::parse($request->hora)->format('H:i:s');
-    
-    $duracion = TipoReservacion::find($request->id_tipo_reservacion);
-    $contenido_duracion = (int) $duracion->franja_horaria;
-    $horaFinal = Carbon::parse($horaInicio)->addHours($contenido_duracion)->format('H:i:s');
-    
     $reservacion->update([
-        'cancha_id' => $request->cancha_id,
-        'id_tipo_reservacion' => $request->id_tipo_reservacion,
-        'reservacion_date' => $fechaReserva,
-        'hora_inicio' => $horaInicio,
-        'hora_final' => $horaFinal,
-        'status' => $request->status ?? 'programado',
+        'status' => $request->status,
     ]);
 
-    return redirect()->route('reservacions.index')->with('success', 'Reservación actualizada correctamente.');
+    return redirect()->route('reservacions.index')
+        ->with('success', 'Estado actualizado correctamente.');
 }
+
 
     /**
      * Remove the specified resource from storage.
