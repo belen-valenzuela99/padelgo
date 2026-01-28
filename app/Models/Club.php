@@ -41,5 +41,11 @@ public function redesSociales()
     );
 }
 
+public function servicios()
+{
+    return $this->hasMany(ClubServicio::class, 'id_club');
+}
+
+
         
 }

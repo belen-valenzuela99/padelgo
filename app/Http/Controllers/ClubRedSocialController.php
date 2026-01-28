@@ -32,19 +32,20 @@ class ClubRedSocialController extends Controller
         return back()->with('success', 'Redes sociales guardadas correctamente');
     }
 
-    public function syncRedes(Request $request)
+  public function syncRedes(Request $request)
 {
     $clubId = $request->id_club;
-    $redesRequest = $request->input('redes', []); // solo las marcadas
+    $redesRequest = $request->input('redes', []);
 
-    // Obtener todas las redes sociales existentes
     $todasLasRedes = RedSocial::pluck('id');
 
     foreach ($todasLasRedes as $redId) {
 
-        if (array_key_exists($redId, $redesRequest)) {
-
-            // Crear o actualizar si está marcada
+        if (
+            array_key_exists($redId, $redesRequest)
+            && !empty($redesRequest[$redId])
+        ) {
+            // Checkbox marcado Y URL con contenido → guardar
             ClubRedSocial::updateOrCreate(
                 [
                     'id_club' => $clubId,
@@ -56,13 +57,17 @@ class ClubRedSocialController extends Controller
             );
 
         } else {
-            // Si NO está marcada → eliminar relación
+            // Checkbox desmarcado O sin URL → eliminar relación
             ClubRedSocial::where('id_club', $clubId)
                 ->where('id_red_social', $redId)
                 ->delete();
         }
     }
 
-    return redirect()->back()->with('success', 'Redes sociales actualizadas correctamente.');
+    return back()->with('success', 'Redes sociales actualizadas correctamente');
 }
+
+
+//return redirect()->back()->with('success', 'Redes sociales actualizadas correctamente.');
+
 }

@@ -151,6 +151,7 @@
                     placeholder="URL de {{ $red->nombre }}"
                     value="{{ $valor }}"
                     {{ $checked ? '' : 'disabled' }}
+                    
                 >
             </div>
         </div>
@@ -158,6 +159,61 @@
 
     <button type="submit" class="btn btn-success mt-3">
         Guardar redes sociales
+    </button>
+</form>
+
+<hr class="my-4">
+
+<h4 class="mb-3">Servicios del Club</h4>
+
+<form action="{{ route('club_servicios.store') }}" method="POST">
+    @csrf
+
+    <input type="hidden" name="id_club" value="{{ $club->id }}">
+
+    @php
+        $serviciosDisponibles = [
+            'Wi-Fi',
+            'Vestuario',
+            'Ayuda Médica',
+            'Torneos',
+            'Cumpleaños',
+            'Parrilla',
+            'Escuelita deportiva',
+            'Bar / Restaurante',
+            'Quincho'
+        ];
+
+        // Servicios ya guardados del club
+        $serviciosClub = $serviciosClub ?? [];
+    @endphp
+
+    <div class="row">
+        @foreach($serviciosDisponibles as $servicio)
+            <div class="col-md-4 mb-3">
+                <div class="form-check border rounded p-3 h-100">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        name="servicios[]"
+                        value="{{ $servicio }}"
+                        id="servicio-{{ Str::slug($servicio) }}"
+                        {{ in_array($servicio, $serviciosClub) ? 'checked' : '' }}
+                    >
+
+                    <label
+                        class="form-check-label fw-semibold"
+                        for="servicio-{{ Str::slug($servicio) }}"
+                    >
+                        {{ $servicio }}
+                    </label>
+                </div>
+            </div>
+        @endforeach
+    </div>
+
+    <button type="submit" class="btn btn-success mt-3">
+        Guardar servicios
     </button>
 </form>
 

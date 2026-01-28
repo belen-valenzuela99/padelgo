@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\AbonoController;    
 use App\Http\Controllers\RedSocialController;
 use App\Http\Controllers\ClubRedSocialController;
+use App\Http\Controllers\ClubServicioController;
 
 
 Route::get('/reservaPrueba', [ReservaController::class, 'index'])
@@ -84,8 +85,9 @@ Route::middleware(['auth', 'role:gestor'])->prefix('gestor')->group(function () 
     Route::get('/canchas/{id}/tipos', [CanchaTipoReservacionController::class, 'edit'])->name('canchas.tipos.edit');
     Route::put('/canchas/{id}/tipos', [CanchaTipoReservacionController::class, 'update'])->name('canchas.tipos.update');
     Route::resource('abonos', AbonoController::class);
-    Route::post('club-red-social',[ClubRedSocialController::class, 'store'])->name('club_red_social.store');
-    Route::post('/club-redes/sync', [ClubRedSocialController::class, 'syncRedes'])->name('club_red_social.sync');
+   //Route::post('club-red-social',[ClubRedSocialController::class, 'store'])->name('club_red_social.store');
+    //Route::post('/club-redes/sync', [ClubRedSocialController::class, 'syncRedes'])->name('club_red_social.sync');
+    
 
 
 
@@ -108,7 +110,10 @@ Route::get('/horas-ocupadas/{cancha}/{fecha}', [FrontendController::class, 'hora
 
 // ================== GESTOR Y ADMIN ==================
 Route::middleware(['auth', 'role:admin,gestor'])->group(function () {
-    Route::resource('clubes', ClubController::class)->parameters(['clubes' => 'club']);
+Route::resource('clubes', ClubController::class)->parameters(['clubes' => 'club']);
+Route::post('/club-servicios', [ClubServicioController::class, 'store'])->name('club_servicios.store');
+Route::post('/club-redes/sync', [ClubRedSocialController::class, 'syncRedes'])->name('club_red_social.sync');
+Route::post('club-red-social',[ClubRedSocialController::class, 'store'])->name('club_red_social.store');
 });
 
 

@@ -82,12 +82,15 @@ class ClubController extends Controller
 
     $redesClub = ClubRedSocial::where('id_club', $club->id)
         ->pluck('url_red', 'id_red_social');
+    
+    $serviciosClub = $club->servicios->pluck('nombre_servicio')->toArray();
 
     return view('admin.clubes.edit', compact(
         'club',
         'gestores',
         'redesSociales',
-        'redesClub'
+        'redesClub',
+        'serviciosClub'
     ));
 }
 
