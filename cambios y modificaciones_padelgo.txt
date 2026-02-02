@@ -38,7 +38,7 @@ LISTA PARA FEBRERO
    Ingresos totales
 - Fecha de Abono no validada en lista de abonos
 - Calendario para crear abonos
-- Filtro por fecha y hora, y que se vean los horarios y precio. https://atcsports.io/results?horario=02%3A00&tipoDeporte=7&dia=2026-01-18&placeId=6eqeh1jbg&locationName=Formosa%2C+Argentina 
+- Filtro por fecha y hora, y que se vean los horarios y precio. (X)
 - Validar la tarjeta (mes) (X)
 - Agregar mp (si se llega)
 - Agregar el mapa de ubicacion en los clubes. (X)

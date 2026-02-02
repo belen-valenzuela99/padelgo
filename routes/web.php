@@ -116,6 +116,9 @@ Route::post('/club-redes/sync', [ClubRedSocialController::class, 'syncRedes'])->
 Route::post('club-red-social',[ClubRedSocialController::class, 'store'])->name('club_red_social.store');
 });
 
+// ================== FILTRO POR HORARIO Y DIA  ==================
+Route::post('/buscar-canchas', [FrontendController::class, 'buscarCanchasDisponibles'])
+    ->name('buscar.canchas');
 
 
 require __DIR__.'/auth.php';
