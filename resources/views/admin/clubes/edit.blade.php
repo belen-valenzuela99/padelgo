@@ -14,7 +14,7 @@
         </div>
     @endif
 
-    <form action="{{ route('clubes.update', $club->id) }}" method="POST" enctype="multipart/form-data">
+    <form id="form-club" action="{{ route('clubes.update', $club->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT') 
 
@@ -98,12 +98,13 @@
 
 
 
-        <button type="submit" class="btn btn-primary">Actualizar</button>
+        
+        {{--<button type="submit" class="btn btn-primary">Actualizar</button>--}}
         <a href="{{ route('clubes.index') }}" class="btn btn-secondary ms-2">Cancelar</a>
     </form>
 
  <h4 class="mt-4 mb-3">Redes Sociales del Club</h4>
-<form action="{{ route('club_red_social.sync') }}" method="POST">
+<form id="form-redes" action="{{ route('club_red_social.sync') }}" method="POST">
 
     @csrf
 
@@ -157,16 +158,16 @@
         </div>
     @endforeach
 
-    <button type="submit" class="btn btn-success mt-3">
+    {{--<button type="submit" class="btn btn-success mt-3">
         Guardar redes sociales
-    </button>
+    </button>--}}
 </form>
 
 <hr class="my-4">
 
 <h4 class="mb-3">Servicios del Club</h4>
 
-<form action="{{ route('club_servicios.store') }}" method="POST">
+<form id="form-servicios" action="{{ route('club_servicios.store') }}" method="POST">
     @csrf
 
     <input type="hidden" name="id_club" value="{{ $club->id }}">
@@ -212,10 +213,17 @@
         @endforeach
     </div>
 
-    <button type="submit" class="btn btn-success mt-3">
+    {{--<button type="submit" class="btn btn-success mt-3">
         Guardar servicios
-    </button>
+    </button>--}}
 </form>
+
+<div class="mt-4">
+    <button type="button" class="btn btn-primary btn-lg" onclick="guardarTodo()">
+        Guardar todos los cambios
+    </button>
+</div>
+
 
 
 </div>
@@ -245,6 +253,19 @@ function buscarMapa() {
         });
     });
 
+    function guardarTodo() {
+    // Enviar formulario principal
+    document.getElementById('form-club').submit();
+
+    // Esperar un poco y enviar los otros
+    setTimeout(() => {
+        document.getElementById('form-redes').submit();
+    }, 300);
+
+    setTimeout(() => {
+        document.getElementById('form-servicios').submit();
+    }, 600);
+}
 
 </script>
 

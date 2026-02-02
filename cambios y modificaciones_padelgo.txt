@@ -42,11 +42,11 @@ LISTA PARA FEBRERO
 - Validar la tarjeta (mes) (X)
 - Agregar mp (si se llega)
 - Agregar el mapa de ubicacion en los clubes. (X)
-- Poner informacion de contacto (redes sociales) de cada club. 
+- Poner informacion de contacto (redes sociales) de cada club. (X)
 - Que cada cancha tenga un mismo horario (7:00 a 2:00 am) (por ahora no)
 - Cambiar el nombre del modulo de tipo de reservacion y que solo defina el tipo de precio por horario. 
 - Agregar en el dashboard de dueño del club, los graficos de los reportes. 
-- Agregar los detalles del club, como los servicios.
+- Agregar los detalles del club, como los servicios. (X)
 - Agregar modulo de club, para el gestor. (Para modificar la informacion del club, como el horario). (X)
 -Arreglar cargar reservacion desde el panel de gestor
 -Conectar abono_id de reservaciones con id de abonos
