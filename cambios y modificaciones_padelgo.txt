@@ -50,3 +50,4 @@ LISTA PARA FEBRERO
 - Agregar modulo de club, para el gestor. (Para modificar la informacion del club, como el horario). (X)
 -Arreglar cargar reservacion desde el panel de gestor
 -Conectar abono_id de reservaciones con id de abonos
+- QUE APAREZCAN LAS REDES Y LOS SERVICIOS EN CLUBES. 
