@@ -68,6 +68,47 @@
            placeholder="Buscar club por nombre o dirección...">
     </div>
 
+    @php
+    $hoy = \Carbon\Carbon::now()->format('Y-m-d');
+    $maxFecha = \Carbon\Carbon::now()->addDays(10)->format('Y-m-d');
+@endphp 
+
+<div class="mb-4  buscador_club gap-2">
+    <form  class="d-flex justify-content-center gap-3" action="{{ route('buscar.canchas') }}" method="POST">
+    @csrf
+     <input
+        type="date"
+        name="fecha_buscador"
+        id="fecha_buscador"
+        class="form-control shadow-sm"
+        value="{{ $hoy }}"
+        min="{{ $hoy }}"
+        max="{{ $maxFecha }}"
+    >
+
+    <select name="horario_buscador" id="horario_buscador" class="form-select shadow-sm">
+    @for ($h = 8; $h <= 23; $h++)
+        <option value="{{ sprintf('%02d:00', $h) }}">
+            {{ sprintf('%02d:00', $h) }}
+        </option>
+    @endfor
+
+    @for ($h = 0; $h <= 2; $h++)
+        <option value="{{ sprintf('%02d:00', $h) }}">
+            {{ sprintf('%02d:00', $h) }}
+        </option>
+    @endfor
+</select>
+
+
+    <button type="submit" class="btn btn-primary">
+        Buscar
+    </button>
+</form>
+</div>
+
+
+
     <div class="container_card">
         @forelse($clubes as $club)
             <div class="card" style="width: 18rem;">

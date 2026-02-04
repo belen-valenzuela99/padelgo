@@ -268,6 +268,36 @@ public function prepararReservacion(Request $request)
 }
 
 
+public function buscarCanchasDisponibles(Request $request)
+{
+    $request->validate([
+        'fecha_buscador' => 'required|date',
+        'horario_buscador' => 'required',
+    ]);
+
+    $fecha = $request->fecha_buscador;
+    $hora = $request->horario_buscador;
+
+    $canchasDisponibles = Canchas::where('is_active', true)
+        ->whereDoesntHave('reservaciones', function ($query) use ($fecha, $hora) {
+            $query->where('reservacion_date', $fecha)
+                  ->where('hora_inicio', '<=', $hora)
+                  ->where('hora_final', '>', $hora)
+                  ->whereIn('status', ['programado']);
+        })
+        ->with('club')
+        ->get();
+
+    return view('frontend.resultado_canchas', compact(
+        'canchasDisponibles',
+        'fecha',
+        'hora'
+    ));
+}
+
+
+
+
     
     /**
      * Display the specified resource.

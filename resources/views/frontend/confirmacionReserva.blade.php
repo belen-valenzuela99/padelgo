@@ -67,6 +67,7 @@
         background: #e0e0e0;
         color: #777;
         cursor: not-allowed !important;
+        display:none;
     }
     .hora-pasada.hora-box:hover {
         background: #e0e0e0;

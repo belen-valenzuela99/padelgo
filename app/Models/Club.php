@@ -16,6 +16,7 @@ class Club extends Model
         'nombre',
         'img',
         'direccion',
+        'mapa',
     ];
 
     // Relación ejemplo: una categoría puede tener muchas partidas
@@ -25,9 +26,27 @@ public function canchas()
 }
 
         
-    public function gestor()
+public function gestor()
     {
         return $this->belongsTo(User::class, 'id_user');
     }
+
+public function redesSociales()
+{
+    return $this->belongsToMany(
+        RedSocial::class,
+        'club_red_social',
+        'id_club',
+        'id_red_social'
+    )->withPivot('url_red');
+}
+
+
+public function servicios()
+{
+    return $this->hasMany(ClubServicio::class, 'id_club');
+}
+
+
         
 }

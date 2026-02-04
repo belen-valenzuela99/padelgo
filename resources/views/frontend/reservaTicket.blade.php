@@ -49,7 +49,8 @@
         <button class="btn btn-success" onclick="descargarTicket()">
             Descargar Ticket PDF
         </button>
-        <a href="{{route('home')}}" class="btn btn-primary">Volver</a>
+        <a href="{{route('home')}}" class="btn btn-primary">Volver al inicio</a>
+        <a href="{{route('jugador.reservaciones.index')}}" class="btn btn-warning">Ver mis Reservaciones</a>
     </div>
 
         </div>

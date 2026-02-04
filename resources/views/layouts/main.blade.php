@@ -7,6 +7,8 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
 </head>
 <body>
     <!-- Navbar -->
@@ -50,13 +52,20 @@
                              <li class="nav-item">
                                 <a class="nav-link" href="{{ route('clubes.index') }}">Clubes</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('redes_sociales.index') }}">Redes Sociales</a>
+                            </li>
                               <li class="nav-item">
                                 <a class="nav-link" href="{{ route('admin.users.index') }}">Usuarios</a>
                             </li>
+
+
                         @elseif(Auth::user()->role === 'jugador') 
                          <li class="nav-item">
                                 <a class="nav-link" href="{{ route('jugador.reservaciones.index') }}">Mis Reservaciones</a>
                             </li>
+
+                            
                         @elseif(Auth::user()->role === 'gestor') 
                              <li class="nav-item">
                                 <a class="nav-link" href="{{ route('canchas.index') }}">Canchas</a>
@@ -69,6 +78,9 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ route('abonos.index') }}">Abonos</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('clubes.index') }}">Mi Club</a>
                             </li>
 
                         @endif

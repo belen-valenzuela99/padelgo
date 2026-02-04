@@ -33,6 +33,12 @@ protected $fillable = [
     }
 
 
+    public function reservaciones()
+    {
+        return $this->hasMany(Reservacion::class, 'cancha_id');
+        }
+
+
 }
 
 

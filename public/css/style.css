@@ -45,7 +45,7 @@
 /* CARD */
 .card {
     transition: all .4s ease-in-out;
-    border: none;
+    border: color( red green blue);
     border-radius: 18px;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.12);
 }
@@ -58,6 +58,8 @@
 /* CONTENIDO DE LA CARD */
 .card-body {
     text-align: center;
+    border-color: #0c1449   ;
+    background-color: #e0e3ff;
 }
 
 .card-title {
@@ -124,7 +126,8 @@ justify-content: space-between;
     height: 340px;          /* AUMENTA EL ALTO */
     width: 100%;
     overflow: hidden;       
-    border-radius: 20px;    
+    border-radius: 20px;
+        
 }
 
 .contenedor_imagen img {
@@ -132,7 +135,18 @@ justify-content: space-between;
     height: 100%;
     object-fit: cover;      /* EVITA QUE SE DEFORME */
     object-position: center;
+    
 }
+
+.buscador_club {
+    
+    padding: 0 200px;
+
+
+}
+
+
+
 
 
 
@@ -353,65 +367,31 @@ min-height: 500px;
 }
 
 
-/* LOGIN*/
-/* Fondo general */
-.login-container {
-    background-color: #16162C;
-    min-height: 100vh;
+.card-img-wrapper {
+    position: relative;
+    height: 180px;
+    overflow: hidden;
+    border-radius: 15px 15px 0 0;
 }
 
-/* Tarjeta */
-.login-card {
-    background-color: #1A39FF;
+.card-img-wrapper img {
     width: 100%;
-    max-width: 450px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, .4);
-    border: 2px solid #C3FF00;
-}
-
-/* Logo */
-.login-logo {
-    height: 80px;
-    width: 80px;
+    height: 100%;
     object-fit: cover;
-    border: 3px solid #C3FF00;
+    position: relative;
+    z-index: 1;
 }
 
-/* Título */
-.login-title {
-    color: #FFFFFF;
-    font-weight: bold;
-}
-
-/* Inputs */
-input[type="email"],
-input[type="password"] {
-    border-radius: 6px;
-    border: 1px solid #C3FF00 !important;
-    background-color: #ffffff;
-}
-
-input:focus {
-    border-color: #C3FF00 !important;
-}
-
-/* Botón */
-button.btn-success {
-    background-color: #C3FF00 !important;
-    color: #16162C !important;
-    font-weight: bold;
-    border: none;
-    padding: 8px 18px;
-    transition: .2s;
-}
-
-button.btn-success:hover {
-    background-color: #a4d800 !important;
-}
-
-/* Links */
-a.text-white:hover {
-    color: #C3FF00 !important;
+.card-img-wrapper::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0));
+    z-index: 2;
+    pointer-events: none;
 }
 
 /* VISTA CLUB*/
@@ -567,4 +547,18 @@ a.text-white:hover {
 .club-hero-subtitle {
     font-size: 1.2rem;
     opacity: 0.9;
+}
+
+.blog-info{
+    border: 1px solid #ccc;
+    background-color: #FFFFFF;
+    padding: 10px 15px;
+    border-radius: 10px;
+
+}
+
+.contenedor-blog-info{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
 }
