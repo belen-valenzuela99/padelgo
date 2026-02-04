@@ -548,3 +548,17 @@ min-height: 500px;
     font-size: 1.2rem;
     opacity: 0.9;
 }
+
+.blog-info{
+    border: 1px solid #ccc;
+    background-color: #FFFFFF;
+    padding: 10px 15px;
+    border-radius: 10px;
+
+}
+
+.contenedor-blog-info{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}

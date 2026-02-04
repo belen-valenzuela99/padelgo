@@ -38,8 +38,9 @@ public function redesSociales()
         'club_red_social',
         'id_club',
         'id_red_social'
-    );
+    )->withPivot('url_red');
 }
+
 
 public function servicios()
 {

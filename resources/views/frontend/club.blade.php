@@ -73,9 +73,97 @@
 
     </div>
 
+    <br>
+    <br>
+
     <div class="row">
-        <iframe src="{{ $club->mapa }}" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        <div class="col-7 ">
+            <iframe src="{{ $club->mapa }}" width="100%" height="600" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+        <div class="col-5  contenedor-blog-info">
+            <div class="blog-info">
+
+                 <h3 class="mb-3">Ubicacion</h3>
+                <p>  📍 {{ $club->direccion }}</p>
+                 
+            </div>
+                
+            <div class="blog-info">
+    <h3 class="mb-3">Redes Sociales</h3>
+
+    <div class="d-flex flex-wrap gap-3">
+        @forelse($club->redesSociales as $red)
+            @if($red->pivot->url_red)
+                <a 
+                    href="{{ $red->pivot->url_red }}" 
+                    target="_blank"
+                    class="d-flex align-items-center gap-2 text-decoration-none border rounded px-3 py-2 shadow-sm bg-light"
+                >
+                    {{-- Imagen --}}
+                    <img 
+                        src="{{ asset($red->img) }}" 
+                        alt="{{ $red->nombre }}"
+                        class="img-fluid"
+                        style="width: 28px; height: 28px; object-fit: contain;"
+                    >
+
+                    {{-- Nombre --}}
+                    <span class="fw-semibold text-dark">
+                        {{ $red->nombre }}
+                    </span>
+                </a>
+            @endif
+        @empty
+            <p class="text-muted">Este club no tiene redes sociales cargadas.</p>
+        @endforelse
     </div>
+</div>
+
+
+            @php
+                if (!function_exists('servicioIcono')) {
+                    function servicioIcono($servicio) {
+                        return match ($servicio) {
+                            'Wi-Fi' => 'bi-wifi',
+                            'Vestuario' => 'bi-person-badge',
+                            'Ayuda Médica' => 'bi-heart-pulse',
+                            'Torneos' => 'bi-trophy',
+                            'Cumpleaños' => 'bi-balloon',
+                            'Parrilla' => 'bi-fire',
+                            'Escuelita deportiva' => 'bi-dribbble',
+                            'Bar / Restaurante' => 'bi-cup-hot',
+                            'Quincho' => 'bi-house',
+                            default => 'bi-check-circle',
+                        };
+                    }
+                }
+            @endphp
+
+                <div class="blog-info mt-4">
+                <h3 class="mb-3">Servicios </h3>
+
+                <div class="d-flex flex-wrap gap-3">
+                    @forelse($club->servicios as $servicio)
+
+                        <div class="d-flex align-items-center gap-2 border rounded px-3 py-2 shadow-sm bg-light">
+                            {{-- Ícono --}}
+                        <i class="bi {{ servicioIcono($servicio->nombre_servicio) }} fs-5" style="color:#2f3b65;"></i>
+
+                            {{-- Nombre --}}
+                            <span class="fw-semibold">
+                                {{ $servicio->nombre_servicio }}
+                            </span>
+                        </div>
+
+                    @empty
+                        <p class="text-muted">Este club no tiene servicios cargados.</p>
+                    @endforelse
+                </div>
+            </div>
+
+            </div>
+    </div>
+
     
 
 </div>
