@@ -85,6 +85,9 @@ Route::middleware(['auth', 'role:gestor'])->prefix('gestor')->group(function () 
     Route::get('/canchas/{id}/tipos', [CanchaTipoReservacionController::class, 'edit'])->name('canchas.tipos.edit');
     Route::put('/canchas/{id}/tipos', [CanchaTipoReservacionController::class, 'update'])->name('canchas.tipos.update');
     Route::resource('abonos', AbonoController::class);
+    Route::post('/abonos/confirmar', [AbonoController::class, 'confirmar'])
+    ->name('abonos.confirmar');
+
    //Route::post('club-red-social',[ClubRedSocialController::class, 'store'])->name('club_red_social.store');
     //Route::post('/club-redes/sync', [ClubRedSocialController::class, 'syncRedes'])->name('club_red_social.sync');
     

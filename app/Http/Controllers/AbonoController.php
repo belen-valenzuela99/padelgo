@@ -93,35 +93,137 @@ public function update(Request $request, Abono $abono)
      * GUARDAR ABONO + CREAR RESERVACIONES
      */
     public function store(Request $request)
-    {
-        $request->validate([
-            'user_id'      => 'required|exists:users,id',
-            'cancha_id'    => 'required|exists:canchas,id',
-            'dia_semana'   => 'required|string',
-            'mes'          => 'required|integer|min:1|max:12',
-            'hora_inicio'  => 'required',
-            'hora_fin'     => 'required',
-            'precio'       => 'required|numeric|min:0',
+{
+    $request->validate([
+        'user_id'      => 'required|exists:users,id',
+        'cancha_id'    => 'required|exists:canchas,id',
+        'dia_semana'   => 'required|string',
+        'mes'          => 'required|integer|min:1|max:12',
+        'hora_inicio'  => 'required',
+        'hora_fin'     => 'required',
+        'precio'       => 'required|numeric|min:0',
+    ]);
+
+    // Obtener fechas disponibles y no disponibles
+    $resultado = $this->analizarFechasAbono($request);
+
+    // Si hay fechas no disponibles → mostrar confirmación
+    if (count($resultado['no_disponibles']) > 0) {
+        return view('admin.abonos.confirmar', [
+            'data'            => $request->all(),
+            'disponibles'     => $resultado['disponibles'],
+            'no_disponibles'  => $resultado['no_disponibles'],
         ]);
-
-        // Crear el abono
-        $abono = Abono::create([
-            'user_id'     => $request->user_id,
-            'cancha_id'   => $request->cancha_id,
-            'dia_semana'  => $request->dia_semana,
-            'mes'         => $request->mes,
-            'hora_inicio' => $request->hora_inicio,
-            'hora_fin'    => $request->hora_fin,
-            'precio'      => $request->precio,
-            'activo'      => true,
-        ]);
-
-        // Generar las reservaciones automáticas del mes
-        $this->generarReservasDelMes($abono);
-
-        return redirect()->route('abonos.index')
-            ->with('success', 'Abono creado y reservas generadas correctamente.');
     }
+
+    // Si todo está disponible, crear directamente
+    return $this->crearAbonoConReservas($request, $resultado['disponibles']);
+}
+private function analizarFechasAbono(Request $request)
+{
+    $dias = [
+        'lunes' => 1,
+        'martes' => 2,
+        'miércoles' => 3,
+        'jueves' => 4,
+        'viernes' => 5,
+        'sábado' => 6,
+        'domingo' => 0,
+    ];
+
+    $anio = now()->year;
+    $fecha = Carbon::create($anio, $request->mes, 1)->startOfMonth();
+
+    while ($fecha->dayOfWeek !== $dias[$request->dia_semana]) {
+        $fecha->addDay();
+    }
+
+    $disponibles = [];
+    $noDisponibles = [];
+
+   while ($fecha->month == $request->mes) {
+
+    $inicioAbono = Carbon::parse($fecha->toDateString() . ' ' . $request->hora_inicio);
+    $finAbono    = Carbon::parse($fecha->toDateString() . ' ' . $request->hora_fin);
+
+    // ⏭ Cruza medianoche
+    if ($request->hora_fin <= $request->hora_inicio) {
+        $finAbono->addDay();
+    }
+
+    $conflicto = Reservacion::where('cancha_id', $request->cancha_id)
+        ->where('reservacion_date', $fecha->toDateString())
+        ->get()
+        ->some(function ($reserva) use ($inicioAbono, $finAbono) {
+
+            $inicioReserva = Carbon::parse(
+                $reserva->reservacion_date . ' ' . $reserva->hora_inicio
+            );
+
+            $finReserva = Carbon::parse(
+                $reserva->reservacion_date . ' ' . $reserva->hora_final
+            );
+
+            // ⏭ Cruza medianoche
+            if ($reserva->hora_final <= $reserva->hora_inicio) {
+                $finReserva->addDay();
+            }
+
+            //  detección real de solapamiento
+            return $inicioReserva < $finAbono && $finReserva > $inicioAbono;
+        });
+
+    if ($conflicto) {
+        $noDisponibles[] = $fecha->toDateString();
+    } else {
+        $disponibles[] = $fecha->toDateString();
+    }
+
+    $fecha->addWeek();
+}
+
+
+    return [
+        'disponibles' => $disponibles,
+        'no_disponibles' => $noDisponibles,
+    ];
+}
+
+public function confirmar(Request $request)
+{
+    $resultado = $this->analizarFechasAbono($request);
+
+    return $this->crearAbonoConReservas($request, $resultado['disponibles']);
+}
+private function crearAbonoConReservas($request, $fechas)
+{
+    $abono = Abono::create([
+        'user_id' => $request->user_id,
+        'cancha_id' => $request->cancha_id,
+        'dia_semana' => $request->dia_semana,
+        'mes' => $request->mes,
+        'hora_inicio' => $request->hora_inicio,
+        'hora_fin' => $request->hora_fin,
+        'precio' => $request->precio,
+        'activo' => true,
+    ]);
+
+    foreach ($fechas as $fecha) {
+        Reservacion::create([
+            'user_id' => $request->user_id,
+            'cancha_id' => $request->cancha_id,
+            'reservacion_date' => $fecha,
+            'hora_inicio' => $request->hora_inicio,
+            'hora_final' => $request->hora_fin,
+            'precio' => $request->precio,
+            'status' => 'programado',
+            'abono_id' => $abono->id,
+        ]);
+    }
+
+    return redirect()->route('abonos.index')
+        ->with('success', 'Abono creado con fechas disponibles.');
+}
 
 
     /**
@@ -161,30 +263,33 @@ public function update(Request $request, Abono $abono)
         // Crear reservas semanales
         while ($fecha->month == $mes) {
 
-            // Verificar superposición
-            $conflicto = Reservacion::where('cancha_id', $abono->cancha_id)
-                ->where('reservacion_date', $fecha->toDateString())
-                ->where(function ($q) use ($abono) {
-                    $q->whereBetween('hora_inicio', [$abono->hora_inicio, $abono->hora_fin])
-                    ->orWhereBetween('hora_final', [$abono->hora_inicio, $abono->hora_fin]);
-                })
-                ->exists();
+          $inicioAbono = Carbon::parse($fecha->toDateString() . ' ' . $abono->hora_inicio);
+$finAbono    = Carbon::parse($fecha->toDateString() . ' ' . $abono->hora_fin);
 
-            if (!$conflicto) {
-                Reservacion::create([
-                    'user_id'           => $abono->user_id,
-                    'cancha_id'         => $abono->cancha_id,
-                    'reservacion_date'  => $fecha->toDateString(),
-                    'hora_inicio'       => $abono->hora_inicio,
-                    'hora_final'        => $abono->hora_fin,
-                    'id_tipo_reservacion' => null,
-                    'precio'            => $abono->precio,
-                    'status'            => 'programado',
-                    'abono_id'          => $abono->id,
-                ]);
-            }
+if ($abono->hora_fin <= $abono->hora_inicio) {
+    $finAbono->addDay();
+}
 
-            $fecha->addWeek();
+$conflicto = Reservacion::where('cancha_id', $abono->cancha_id)
+    ->where('reservacion_date', $fecha->toDateString())
+    ->get()
+    ->some(function ($reserva) use ($inicioAbono, $finAbono) {
+
+        $inicioReserva = Carbon::parse(
+            $reserva->reservacion_date . ' ' . $reserva->hora_inicio
+        );
+
+        $finReserva = Carbon::parse(
+            $reserva->reservacion_date . ' ' . $reserva->hora_final
+        );
+
+        if ($reserva->hora_final <= $reserva->hora_inicio) {
+            $finReserva->addDay();
+        }
+
+        return $inicioReserva < $finAbono && $finReserva > $inicioAbono;
+    });
+
         }
     }
 
