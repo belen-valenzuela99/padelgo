@@ -14,6 +14,8 @@ use App\Http\Controllers\AbonoController;
 use App\Http\Controllers\RedSocialController;
 use App\Http\Controllers\ClubRedSocialController;
 use App\Http\Controllers\ClubServicioController;
+use App\Http\Controllers\ReportesController;
+
 
 
 Route::get('/reservaPrueba', [ReservaController::class, 'index'])
@@ -85,8 +87,15 @@ Route::middleware(['auth', 'role:gestor'])->prefix('gestor')->group(function () 
     Route::get('/canchas/{id}/tipos', [CanchaTipoReservacionController::class, 'edit'])->name('canchas.tipos.edit');
     Route::put('/canchas/{id}/tipos', [CanchaTipoReservacionController::class, 'update'])->name('canchas.tipos.update');
     Route::resource('abonos', AbonoController::class);
-    Route::post('/abonos/confirmar', [AbonoController::class, 'confirmar'])
-    ->name('abonos.confirmar');
+    Route::post('/abonos/confirmar', [AbonoController::class, 'confirmar'])->name('abonos.confirmar');
+    Route::get('/', [ReportesController::class, 'dashboard'])->name('reportes.dashboard');
+    Route::get('/reservas-por-mes', [ReportesController::class, 'reservasPorMes'])->name('reportes.reservas_mes');
+    Route::get('/canchas-mas-reservadas', [ReportesController::class, 'canchasMasReservadas'])->name('reportes.canchas');
+    Route::get('/ingresos', [ReportesController::class, 'ingresosTotales'])->name('reportes.ingresos');
+    Route::get('/dashboard', [ReportesController::class, 'dashboard'])->name('gestor.dashboard');
+
+
+
 
    //Route::post('club-red-social',[ClubRedSocialController::class, 'store'])->name('club_red_social.store');
     //Route::post('/club-redes/sync', [ClubRedSocialController::class, 'syncRedes'])->name('club_red_social.sync');
