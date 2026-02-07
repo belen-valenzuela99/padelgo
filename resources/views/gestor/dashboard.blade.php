@@ -2,15 +2,23 @@
 
 @section('title', 'Dashboard Gestor')
 
+
 @section('content')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <h1>Bienvenido al Dashboard Gestor</h1>
-    
+
     <div class="container-fluid">
-
-    <h2 class="mb-4">Dashboard General</h2>
-
+        <!-- BOTÓN -->
+<!-- BOTÓN PARA ABRIR MODAL -->
+<button class="btn btn-outline-primary mb-3"
+        data-bs-toggle="modal"
+        data-bs-target="#reporteModal">
+     Reportes avanzados
+</button>
+<br>
+<br>
+<br>
     {{-- KPIs --}}
     <div class="row mb-4">
 
@@ -280,7 +288,7 @@
     </div>
      </div>
 
-
+     @include('gestor._modal')
     <script>
     // === RESERVAS POR MES ===
     const reservasMesRaw = @json($reservasPorMes);
@@ -356,9 +364,80 @@ new Chart(document.getElementById('ingresosMesChart'), {
     }
 });
 
+/**
+ * ===============================
+ * DATA INICIAL DESDE BACKEND
+ * ===============================
+ * $canchas debe venir con:
+ * id, nombre, id_club
+ */
+const todasLasCanchas = @json($canchas);
 
+/**
+ * ===============================
+ * FILTRAR CANCHAS POR CLUB
+ * ===============================
+ */
+const clubSelect   = document.getElementById('clubSelect');
+const canchaSelect = document.getElementById('canchaSelect');
 
+function actualizarCanchas() {
+    const clubId = clubSelect.value;
+
+    canchaSelect.innerHTML = '<option value="all">Todas</option>';
+
+    let canchasFiltradas = todasLasCanchas;
+
+    if (clubId !== 'all') {
+        canchasFiltradas = todasLasCanchas.filter(
+            c => String(c.id_club) === String(clubId)
+        );
+    }
+
+    canchasFiltradas.forEach(cancha => {
+        const option = document.createElement('option');
+        option.value = cancha.id;
+        option.textContent = cancha.nombre;
+        canchaSelect.appendChild(option);
+    });
+}
+
+clubSelect.addEventListener('change', actualizarCanchas);
+
+/**
+ * ===============================
+ * ENVÍO AJAX DEL FORMULARIO
+ * ===============================
+ */
+document.getElementById('formReporte').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const resultado = document.getElementById('resultadoReporte');
+    resultado.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border"></div>
+            <p class="mt-2">Generando reporte...</p>
+        </div>
+    `;
+
+    fetch("{{ route('reportes.generar') }}", {
+        method: 'POST',
+        body: new FormData(this),
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('input[name=_token]').value
+        }
+    })
+    .then(res => res.text())
+    .then(html => {
+        resultado.innerHTML = html;
+    })
+    .catch(() => {
+        resultado.innerHTML = `
+            <div class="alert alert-danger">
+                Error al generar el reporte
+            </div>
+        `;
+    });
+});
 </script>
-
-
 @endsection

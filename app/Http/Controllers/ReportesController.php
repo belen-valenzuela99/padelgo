@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Models\Canchas;
 use App\Models\Club;
+use App\Models\Abono;
 
 
 
@@ -166,6 +167,13 @@ public function ingresosTotales()
         ->orderBy('mes')
         ->pluck('total', 'mes');
 
+        $clubs = Club::where('id_user', $userId)->get();
+
+        $canchas = Canchas::whereHas('club', function ($q) use ($userId) {
+            $q->where('id_user', $userId);
+        })->get();
+
+
 
 
         return view('gestor.dashboard', compact(
@@ -178,8 +186,113 @@ public function ingresosTotales()
             'canchasMasReservadas',
             'ultimasReservas',
             'reservasPendientes',
-            'ingresosPorMes'
+            'ingresosPorMes',
+            'clubs',
+            'canchas'
         ));
 
 }
+
+public function index()
+    {
+        $userId = auth()->id();
+
+        $clubs = Club::where('id_user', $userId)->get();
+        $canchas = Canchas::whereHas('club', function ($q) use ($userId) {
+            $q->where('id_user', $userId);
+        })->get();
+
+        return view('gestor.reportes', compact('clubs', 'canchas'));
+    }
+
+   public function generar(Request $request)
+{
+    $tipos = $request->input('tipos', []);
+
+    $clubId   = $request->club_id;
+    $canchaId = $request->cancha_id;
+
+    $data = [];
+
+    /*
+    |--------------------------------------------------------------------------
+    | INGRESOS
+    |--------------------------------------------------------------------------
+    */
+    if (in_array('ingresos', $tipos)) {
+
+       
+
+     $ingresosPorCancha = Canchas::query()
+    ->when($clubId !== 'all', fn($q) => $q->where('id_club', $clubId))
+    ->when($canchaId !== 'all', fn($q) => $q->where('id', $canchaId))
+    ->leftJoin('reservacions', function ($join) {
+        $join->on('canchas.id', '=', 'reservacions.cancha_id')
+             ->whereIn('reservacions.status', ['programado', 'turno completado']);
+    })
+    ->selectRaw('
+        canchas.nombre as cancha,
+        COALESCE(SUM(reservacions.precio), 0) as total
+    ')
+    ->groupBy('canchas.nombre')
+    ->get();
+
+
+$data['ingresos'] = $ingresosPorCancha ?? 0;
+  }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | RESERVAS
+    |--------------------------------------------------------------------------
+    */
+    if (in_array('reservas', $tipos)) {
+
+    $reservasPorCancha = Canchas::query()
+    ->when($clubId !== 'all', fn($q) => $q->where('id_club', $clubId))
+    ->when($canchaId !== 'all', fn($q) => $q->where('id', $canchaId))
+    ->leftJoin('reservacions', 'canchas.id', '=', 'reservacions.cancha_id')
+    ->selectRaw('
+        canchas.nombre as cancha,
+        COUNT(reservacions.id) as total
+    ')
+    ->groupBy('canchas.nombre')
+    ->get();
+;
+
+$data['reservas'] = $reservasPorCancha ?? 0;
+
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ABONOS (ESTE ERA EL QUE FALTABA)
+    |--------------------------------------------------------------------------
+    */
+    if (in_array('abonos', $tipos)) {
+
+    $abonosPorCancha = Canchas::query()
+    ->when($clubId !== 'all', fn($q) => $q->where('id_club', $clubId))
+    ->when($canchaId !== 'all', fn($q) => $q->where('id', $canchaId))
+    ->leftJoin('abonos', function ($join) {
+        $join->on('canchas.id', '=', 'abonos.cancha_id')
+             ->where('abonos.activo', true);
+    })
+    ->selectRaw('
+        canchas.nombre as cancha,
+        COUNT(abonos.id) as total
+    ')
+    ->groupBy('canchas.nombre')
+    ->get();
+
+
+$data['abonos'] = $abonosPorCancha ?? 0;
+
+    }
+
+    return view('gestor.resultados', compact('data'));
+}
+
+
 }

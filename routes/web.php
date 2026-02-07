@@ -93,6 +93,9 @@ Route::middleware(['auth', 'role:gestor'])->prefix('gestor')->group(function () 
     Route::get('/canchas-mas-reservadas', [ReportesController::class, 'canchasMasReservadas'])->name('reportes.canchas');
     Route::get('/ingresos', [ReportesController::class, 'ingresosTotales'])->name('reportes.ingresos');
     Route::get('/dashboard', [ReportesController::class, 'dashboard'])->name('gestor.dashboard');
+    Route::get('/reportes', [ReportesController::class, 'index'])->middleware(['auth'])->name('reportes.index');
+    Route::post('/reportes/generar', [ReportesController::class, 'generar'])->middleware(['auth'])->name('reportes.generar');
+
 
 
 
