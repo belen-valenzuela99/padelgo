@@ -15,6 +15,9 @@ use App\Http\Controllers\RedSocialController;
 use App\Http\Controllers\ClubRedSocialController;
 use App\Http\Controllers\ClubServicioController;
 use App\Http\Controllers\ReportesController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\JugadorDashboardController;
+
 
 
 
@@ -37,23 +40,23 @@ Route::get('/dashboard', function () {
 
 // ================== DASHBOARD ADMIN ==================
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
+    //Route::get('/dashboard', function () {
+        //return view('admin.dashboard');
+   // })->name('admin.dashboard');
     // Se agrega la ruta dentro del middleware del admin o del jugador, 
     // Route::resource('clubes', ClubController::class)->parameters(['clubes' => 'club']);
     Route::resource('redes_sociales', RedSocialController::class)
     ->except(['show'])
     ->names('redes_sociales');
-
     Route::resource('users', UserAdminController::class)->names('admin.users');
+    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 });
+
 
 // ================== DASHBOARD JUGADOR ==================
 Route::middleware(['auth', 'role:jugador'])->prefix('jugador')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('jugador.dashboard');
-    })->name('jugador.dashboard');
+      Route::get('/jugador/dashboard', [JugadorDashboardController::class, 'index'])
+        ->name('jugador.dashboard');
     // Listado de reservas del jugador
     Route::get('/reservaciones', [FrontendController::class, 'misReservaciones'])
         ->name('jugador.reservaciones.index');

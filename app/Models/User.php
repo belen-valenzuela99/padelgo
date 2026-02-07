@@ -46,4 +46,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function clubs()
+{
+    return $this->hasMany(Club::class, 'id_user');
+}
+
 }

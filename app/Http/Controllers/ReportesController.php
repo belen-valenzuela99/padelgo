@@ -224,8 +224,9 @@ public function index()
        
 
      $ingresosPorCancha = Canchas::query()
-    ->when($clubId !== 'all', fn($q) => $q->where('id_club', $clubId))
-    ->when($canchaId !== 'all', fn($q) => $q->where('id', $canchaId))
+    ->when($clubId !== 'all', fn($q) => $q->where('canchas.id_club', $clubId))
+    ->when($canchaId !== 'all', fn($q) => $q->where('canchas.id', $canchaId))
+
     ->leftJoin('reservacions', function ($join) {
         $join->on('canchas.id', '=', 'reservacions.cancha_id')
              ->whereIn('reservacions.status', ['programado', 'turno completado']);
@@ -250,8 +251,9 @@ $data['ingresos'] = $ingresosPorCancha ?? 0;
     if (in_array('reservas', $tipos)) {
 
     $reservasPorCancha = Canchas::query()
-    ->when($clubId !== 'all', fn($q) => $q->where('id_club', $clubId))
-    ->when($canchaId !== 'all', fn($q) => $q->where('id', $canchaId))
+    ->when($clubId !== 'all', fn($q) => $q->where('canchas.id_club', $clubId))
+    ->when($canchaId !== 'all', fn($q) => $q->where('canchas.id', $canchaId))
+
     ->leftJoin('reservacions', 'canchas.id', '=', 'reservacions.cancha_id')
     ->selectRaw('
         canchas.nombre as cancha,
@@ -273,8 +275,9 @@ $data['reservas'] = $reservasPorCancha ?? 0;
     if (in_array('abonos', $tipos)) {
 
     $abonosPorCancha = Canchas::query()
-    ->when($clubId !== 'all', fn($q) => $q->where('id_club', $clubId))
-    ->when($canchaId !== 'all', fn($q) => $q->where('id', $canchaId))
+    ->when($clubId !== 'all', fn($q) => $q->where('canchas.id_club', $clubId))
+    ->when($canchaId !== 'all', fn($q) => $q->where('canchas.id', $canchaId))
+
     ->leftJoin('abonos', function ($join) {
         $join->on('canchas.id', '=', 'abonos.cancha_id')
              ->where('abonos.activo', true);
