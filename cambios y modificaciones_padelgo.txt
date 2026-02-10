@@ -42,13 +42,13 @@ YA HECHO:
    Ingresos totales
 - Fecha de Abono no validada en lista de abonos (X)
 -Conectar abono_id de reservaciones con id de abonos. (X)
-- Agregar en el dashboard de dueño del club, los graficos de los reportes. 
+- Agregar en el dashboard de dueño del club, los graficos de los reportes. (X)
 
 
 LISTA PARA FEBRERO
 - Ver solamente los horarios disponibles
-- Calendario para crear abonos
-- Agregar mp (si se llega)
+- Calendario para crear abonos (X)
+- Agregar mp (si se llega) 
 - Que cada cancha tenga un mismo horario (7:00 a 2:00 am) (por ahora no)
 - Cambiar el nombre del modulo de tipo de reservacion y que solo defina el tipo de precio por horario. 
 - Arreglar cargar reservacion desde el panel de gestor.
