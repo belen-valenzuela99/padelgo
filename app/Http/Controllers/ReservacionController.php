@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use App\Models\Canchas;
 use App\Models\TipoReservacion;
+use App\Models\User;
 
 class ReservacionController extends Controller
 {
@@ -32,13 +33,17 @@ class ReservacionController extends Controller
     {
         $userId = auth()->id();
 
-        // Traer solo las canchas del club cuyo gestor es el usuario logueado
         $canchas = Canchas::whereHas('club', function ($q) use ($userId) {
             $q->where('id_user', $userId);
         })->get();
-        $tipos = TipoReservacion::all();
-        return view('admin.reservacions.create', compact('canchas', 'tipos'));
+
+        $tipos = TipoReservacion::orderBy('hora_inicio')->get();
+
+        $usuarios = \App\Models\User::where('role', 2)->get();
+
+        return view('admin.reservacions.create', compact('canchas', 'tipos', 'usuarios'));
     }
+
 
     /**
      * Store a newly created resource in storage.
@@ -49,31 +54,74 @@ class ReservacionController extends Controller
         'fecha' => 'required|date',
         'hora' => 'required',
         'cancha_id' => 'required|exists:canchas,id',
-        'id_tipo_reservacion' => 'required|integer',
+        'duracion' => 'required|integer|min:1',
         'status' => 'nullable|in:programado,cancelado,turno perdido,turno completado',
+        'usuario' => 'required',
     ]);
 
     $fechaReserva = Carbon::parse($request->fecha)->format('Y-m-d');
-    $horaInicio = Carbon::parse($request->hora)->format('H:i:s');
-    $id_tipo_reservacion = $request->id_tipo_reservacion;
-    
-    $duracion = TipoReservacion::find($request->id_tipo_reservacion);
-    $contenido_duracion = (int) $duracion->franja_horaria;
+    $horaInicio   = Carbon::parse($request->hora)->format('H:i:s');
+    $duracion     = (int) $request->duracion;
 
-    $horaFinal = Carbon::parse($horaInicio)->addHours($contenido_duracion)->format('H:i:s');
+    $horaFinal = Carbon::parse($horaInicio)
+        ->addHours($duracion)
+        ->format('H:i:s');
 
+    $cancha = Canchas::findOrFail($request->cancha_id);
+    $usuario = User::findOrFail($request->usuario);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Buscar franja horaria correcta
+    |--------------------------------------------------------------------------
+    */
+    $tipos = TipoReservacion::orderBy('hora_inicio')->get();
+    $tipoSeleccionado = null;
+
+    $horaCarbon = Carbon::createFromFormat('H:i:s', $horaInicio);
+
+    foreach ($tipos as $tipo) {
+        $inicioTipo = Carbon::parse($tipo->hora_inicio);
+        $finTipo    = Carbon::parse($tipo->hora_fin);
+
+        if ($horaCarbon->gte($inicioTipo) && $horaCarbon->lt($finTipo)) {
+            $tipoSeleccionado = $tipo;
+            break;
+        }
+    }
+
+    if (!$tipoSeleccionado) {
+        $tipoSeleccionado = $tipos->first();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Calcular precio
+    |--------------------------------------------------------------------------
+    */
+    $precioTotal = $tipoSeleccionado->precio * $duracion;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Crear reservación
+    |--------------------------------------------------------------------------
+    */
     Reservacion::create([
-        'user_id' => auth()->id(),
-        'cancha_id' => $request->cancha_id,
-        'id_tipo_reservacion' => $request->id_tipo_reservacion,
+        'user_id' => $usuario->id,
+        'cancha_id' => $cancha->id,
+        'id_tipo_reservacion' => $tipoSeleccionado->id,
         'reservacion_date' => $fechaReserva,
         'hora_inicio' => $horaInicio,
         'hora_final' => $horaFinal,
+        'precio' => $precioTotal,
         'status' => $request->status ?? 'programado',
     ]);
 
-    return redirect()->route('reservacions.index')->with('success', 'Reservación creada correctamente.');
+    return redirect()
+        ->route('reservacions.index')
+        ->with('success', 'Reservación creada correctamente.');
 }
+
 
     /**
      * Display the specified resource.

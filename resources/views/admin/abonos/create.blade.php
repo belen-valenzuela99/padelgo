@@ -36,7 +36,7 @@
                 <select name="cancha_id" class="form-control" required>
                     <option value="">Seleccionar cancha</option>
                     @foreach($canchas as $cancha)
-                        <option value="{{ $cancha->id }}">{{ $cancha->nombre }}</option>
+                        <option value="{{ $cancha->id }}"> <span class="text-secondary"> {{ $cancha->club->nombre  }} </span> -  {{ $cancha->nombre }} </option>
                     @endforeach
                 </select>
             </div>

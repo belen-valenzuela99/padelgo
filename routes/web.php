@@ -17,7 +17,7 @@ use App\Http\Controllers\ClubServicioController;
 use App\Http\Controllers\ReportesController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\JugadorDashboardController;
-
+use App\Models\Canchas;
 
 
 
@@ -138,5 +138,8 @@ Route::post('club-red-social',[ClubRedSocialController::class, 'store'])->name('
 Route::post('/buscar-canchas', [FrontendController::class, 'buscarCanchasDisponibles'])
     ->name('buscar.canchas');
 
+Route::get('/api/cancha/{id}', function ($id) {
+    return Canchas::select('duracion_maxima')->findOrFail($id);
+});
 
 require __DIR__.'/auth.php';
