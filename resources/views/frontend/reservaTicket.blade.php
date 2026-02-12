@@ -38,10 +38,6 @@
           <td>{{ \Carbon\Carbon::parse($reservacion->hora_final)->format('H:i') }}</td>
         </tr>
         <tr>
-          <th class="bg-light text-end">Tipo de Reserva</th>
-          <td>{{ $reservacion->tipoReservacion->franja_horaria ?? 'N/A' }} hora(s)</td>
-        </tr>
-        <tr>
           <th class="bg-light text-end">Estado</th>
           <td>{{ ucfirst($reservacion->status) }}</td>
         </tr>

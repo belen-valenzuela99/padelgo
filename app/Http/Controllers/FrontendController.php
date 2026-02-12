@@ -154,13 +154,17 @@ class FrontendController extends Controller
         ->with('success', 'Reservación creada correctamente.');
 }
 
-public function horasOcupadas($canchaId,  $fecha){
-        $reservas = Reservacion::where('cancha_id', $canchaId)
-            ->whereDate('reservacion_date', $fecha)
-            ->get(['hora_inicio', 'hora_final']);
+public function horasOcupadas($canchaId, $fecha)
+{
+    $reservas = Reservacion::where('cancha_id', $canchaId)
+        ->whereDate('reservacion_date', $fecha)
+        ->where('status', 'programado') // 👈 SOLO estas bloquean
+        ->get(['hora_inicio', 'hora_final']);
 
-        return response()->json($reservas);
-    }
+    return response()->json($reservas);
+}
+
+
     
     public function misReservaciones()
 {

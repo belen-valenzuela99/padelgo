@@ -203,6 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ocupadas = await resp.json();
         }
 
+        console.log(ocupadas);
         construirHorarios(ocupadas);
     }
 
