@@ -44,11 +44,11 @@ YA HECHO:
 -Conectar abono_id de reservaciones con id de abonos. (X)
 - Agregar en el dashboard de dueño del club, los graficos de los reportes. (X)
 - Calendario para crear abonos (X)
+- Arreglar cargar reservacion desde el panel de gestor.(X)
+- Cambiar el nombre del modulo de tipo de reservacion y que solo defina el tipo de precio por horario.(X) 
 
 LISTA PARA FEBRERO
 - Ver solamente los horarios disponibles
 - Agregar mp (si se llega) 
 - Que cada cancha tenga un mismo horario (7:00 a 2:00 am) (por ahora no)
-- Cambiar el nombre del modulo de tipo de reservacion y que solo defina el tipo de precio por horario. 
-- Arreglar cargar reservacion desde el panel de gestor.
 - Que el precio total del abono, se calcule y se muestre al elegir las fechas.

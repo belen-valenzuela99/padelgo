@@ -35,7 +35,7 @@
             {{-- HORARIOS ASIGNADOS --}}
             <td>
                 @php
-                    $horariosActivos = $cancha->tiposReservacion->where('pivot.activo', 1);
+                    $horariosActivos = $cancha->tiposReservacion;
                 @endphp
 
                 @if($horariosActivos->isNotEmpty())
@@ -44,12 +44,10 @@
                             @php
                                 $horaInicio = \Carbon\Carbon::createFromFormat('H:i:s', $tipo->hora_inicio)->format('H:i');
                                 $horaFin = \Carbon\Carbon::createFromFormat('H:i:s', $tipo->hora_fin)->format('H:i');
-                                // Si hay un precio personalizado en el pivot, usarlo, sino el precio global del tipo
-                                $precio = $tipo->pivot->precio ?? $tipo->precio;
                             @endphp
                             <li>
                                 {{ $horaInicio }} - {{ $horaFin }}
-                                <span class="text-muted">($ {{ number_format($precio, 2) }})</span>
+                                <span class="text-muted">($ {{ number_format($tipo->precio, 2) }})</span>
                             </li>
                         @endforeach
                     </ul>
@@ -57,6 +55,7 @@
                     <span class="text-muted">Sin horarios asignados</span>
                 @endif
             </td>
+
 
             <td>{{ $cancha->duracion_maxima }}</td>
             <td>

@@ -70,9 +70,9 @@
                              <li class="nav-item">
                                 <a class="nav-link" href="{{ route('canchas.index') }}">Canchas</a>
                             </li>
-                            <li class="nav-item">
+                           <!--  <li class="nav-item">
                                 <a class="nav-link" href="{{ route('tiporeservacion.index') }}">Tipo de Reservaciones</a>
-                            </li>
+                            </li>-->
                              <li class="nav-item">
                                 <a class="nav-link" href="{{ route('reservacions.index') }}">Reservaciones</a>
                             </li>

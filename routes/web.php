@@ -141,5 +141,11 @@ Route::post('/buscar-canchas', [FrontendController::class, 'buscarCanchasDisponi
 Route::get('/api/cancha/{id}', function ($id) {
     return Canchas::select('duracion_maxima')->findOrFail($id);
 });
+Route::post('/canchas/{cancha}/crear-horario',
+    [CanchaTipoReservacionController::class, 'crearHorario'])->name('canchas.tipos.update');
+Route::delete('/canchas/{cancha}/horario/{tipo}', 
+    [CanchaTipoReservacionController::class, 'destroyHorario']
+)->name('canchas.horarios.destroy');
+
 
 require __DIR__.'/auth.php';

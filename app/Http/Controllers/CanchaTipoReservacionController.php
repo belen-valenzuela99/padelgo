@@ -9,87 +9,133 @@ use Illuminate\Http\Request;
 class CanchaTipoReservacionController extends Controller
 {
     public function edit($canchaId)
-    {
-        $cancha = Canchas::findOrFail($canchaId);
-        $tipos = TipoReservacion::orderBy('hora_inicio')->get();
+        {
+            $cancha = Canchas::with('tiposReservacion')
+                ->findOrFail($canchaId);
 
-        // Relación actual (para marcar los seleccionados)
-        $tiposAsignados = $cancha->tiposReservacion->pluck('pivot')->mapWithKeys(fn($pivot) => [
-            $pivot->tipo_reservacion_id => [
-                'precio' => $pivot->precio,
-                'activo' => $pivot->activo,
-            ]
-        ])->toArray();
+            $tipos = $cancha->tiposReservacion()
+                ->orderBy('hora_inicio')
+                ->get();
 
-        return view('admin.canchas.asignarTipos', compact('cancha', 'tipos', 'tiposAsignados'));
-    }
+            return view('admin.canchas.asignarTipos', compact('cancha', 'tipos'));
+        }
+
 
     public function update(Request $request, $canchaId)
-    {
-        $cancha = Canchas::findOrFail($canchaId);
-        $tipos = TipoReservacion::all();
+{
+    $cancha = Canchas::findOrFail($canchaId);
 
-        // --- 1. OBTENER SOLO LOS TIPOS ACTIVADOS EN EL FORMULARIO ---
-        $tiposSeleccionados = collect();
+    $tipos = $cancha->tiposReservacion;
 
-        foreach ($tipos as $tipo) {
-            $info = $request->input("tipos.{$tipo->id}", null);
+    // Validación de solapamiento SOLO de activos
+    $activos = collect();
 
-            if (isset($info['activo'])) {
-                $tiposSeleccionados->push([
-                    'id' => $tipo->id,
-                    'hora_inicio' => $tipo->hora_inicio,
-                    'hora_fin' => $tipo->hora_fin,
-                ]);
-            }
-        }
+    foreach ($tipos as $tipo) {
+        $info = $request->input("tipos.{$tipo->id}");
 
-        // --- 2. VALIDAR QUE NO SE SOLAPEN LOS HORARIOS ---
-        $errores = [];
-
-        for ($i = 0; $i < $tiposSeleccionados->count(); $i++) {
-            for ($j = $i + 1; $j < $tiposSeleccionados->count(); $j++) {
-                $a = $tiposSeleccionados[$i];
-                $b = $tiposSeleccionados[$j];
-
-                // Convertir a Carbon para comparar horas
-                $aInicio = \Carbon\Carbon::createFromFormat('H:i:s', $a['hora_inicio']);
-                $aFin = \Carbon\Carbon::createFromFormat('H:i:s', $a['hora_fin']);
-                $bInicio = \Carbon\Carbon::createFromFormat('H:i:s', $b['hora_inicio']);
-                $bFin = \Carbon\Carbon::createFromFormat('H:i:s', $b['hora_fin']);
-
-                // Si alguna franja pasa de medianoche, ajustamos la hora final (+1 día)
-                if ($aFin->lessThanOrEqualTo($aInicio)) $aFin->addDay();
-                if ($bFin->lessThanOrEqualTo($bInicio)) $bFin->addDay();
-
-                // Detectar solapamiento
-                $seSolapan = $aInicio->lt($bFin) && $bInicio->lt($aFin);
-
-                if ($seSolapan) {
-                    $errores[] = "Las franjas horarias {$a['hora_inicio']} - {$a['hora_fin']} y {$b['hora_inicio']} - {$b['hora_fin']} se superponen.";
-                }
-            }
-        }
-
-        if (!empty($errores)) {
-            return back()->withErrors($errores)->withInput();
-        }
-
-        // --- 3. SI TODO ESTÁ BIEN, GUARDAMOS ---
-        foreach ($tipos as $tipo) {
-            $info = $request->input("tipos.{$tipo->id}", null);
-
-            $cancha->tiposReservacion()->syncWithoutDetaching([
-                $tipo->id => [
-                    'precio' => $info['precio'] ?? $tipo->precio,
-                    'activo' => isset($info['activo']) ? 1 : 0,
-                ]
+        if (isset($info['activo'])) {
+            $activos->push([
+                'id' => $tipo->id,
+                'hora_inicio' => $tipo->hora_inicio,
+                'hora_fin' => $tipo->hora_fin,
             ]);
         }
-
-        return redirect()->route('canchas.index')->with('success', 'Tipos de reservación asignados correctamente.');
     }
 
+    $errores = [];
+
+    for ($i = 0; $i < $activos->count(); $i++) {
+        for ($j = $i + 1; $j < $activos->count(); $j++) {
+
+            $aInicio = \Carbon\Carbon::createFromFormat('H:i:s', $activos[$i]['hora_inicio']);
+            $aFin    = \Carbon\Carbon::createFromFormat('H:i:s', $activos[$i]['hora_fin']);
+            $bInicio = \Carbon\Carbon::createFromFormat('H:i:s', $activos[$j]['hora_inicio']);
+            $bFin    = \Carbon\Carbon::createFromFormat('H:i:s', $activos[$j]['hora_fin']);
+
+            if ($aFin->lessThanOrEqualTo($aInicio)) $aFin->addDay();
+            if ($bFin->lessThanOrEqualTo($bInicio)) $bFin->addDay();
+
+            if ($aInicio->lt($bFin) && $bInicio->lt($aFin)) {
+                $errores[] = "Las franjas {$activos[$i]['hora_inicio']} - {$activos[$i]['hora_fin']} y {$activos[$j]['hora_inicio']} - {$activos[$j]['hora_fin']} se superponen.";
+            }
+        }
+    }
+
+    if (!empty($errores)) {
+        return back()->withErrors($errores);
+    }
+
+    // Guardar cambios
+    foreach ($tipos as $tipo) {
+
+        $info = $request->input("tipos.{$tipo->id}");
+
+        $tipo->update([
+            'precio' => $info['precio'] ?? $tipo->precio,
+            'activo' => isset($info['activo']) ? 1 : 0,
+        ]);
+    }
+
+    return back()->with('success', 'Horarios actualizados correctamente.');
+}
+
+
+   public function crearHorario(Request $request, $canchaId)
+{
+    $request->validate([
+        'hora_inicio' => 'required',
+        'hora_fin' => 'required',
+        'precio' => 'required|numeric|min:0'
+    ]);
+
+    // Validar solapamiento
+    $existe = TipoReservacion::where('cancha_id', $canchaId)
+        ->where(function ($query) use ($request) {
+            $query->where('hora_inicio', '<', $request->hora_fin)
+                  ->where('hora_fin', '>', $request->hora_inicio);
+        })
+        ->exists();
+
+    if ($existe) {
+        return response()->json([
+            'success' => false,
+            'message' => 'El horario se superpone con otro existente.'
+        ], 400);
+    }
+
+    $tipo = TipoReservacion::create([
+        'cancha_id' => $canchaId,
+        'hora_inicio' => $request->hora_inicio,
+        'hora_fin' => $request->hora_fin,
+        'precio' => $request->precio,
+        'activo' => 0
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'tipo' => $tipo
+    ]);
+}
+
+public function destroyHorario($canchaId, $tipoId)
+{
+    $tipo = TipoReservacion::where('cancha_id', $canchaId)
+        ->where('id', $tipoId)
+        ->first();
+
+    if (!$tipo) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Horario no encontrado.'
+        ], 404);
+    }
+
+    $tipo->delete();
+
+    return response()->json([
+        'success' => true
+    ]);
+}
 
 
 }

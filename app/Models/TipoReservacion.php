@@ -8,28 +8,31 @@ use Illuminate\Database\Eloquent\Model;
 class TipoReservacion extends Model
 {
     use HasFactory;
+
     protected $table = 'tipo_reservacion';
 
-    // Campos que se pueden asignar masivamente
     protected $fillable = [
+        'cancha_id',
         'hora_inicio',
         'hora_fin',
         'precio',
+        'activo',
     ];
 
-    // Relación ejemplo: una categoría puede tener muchas partidas
-    //public function partidas()
-    //{
-    //    return $this->hasMany(Partida::class);
-    //}
-    public function canchas()
+    protected $casts = [
+        'activo' => 'boolean',
+    ];
+
+    // Relación: pertenece a una cancha
+    public function cancha()
     {
-        return $this->belongsToMany(Canchas::class, 'cancha_tipo_reservacion', 'tipo_reservacion_id', 'cancha_id')
-                    ->withPivot('precio', 'activo')
-                    ->withTimestamps();
+        return $this->belongsTo(Canchas::class, 'cancha_id');
     }
 
-
-
-
+    // Relación opcional si quieres validar eliminaciones
+    public function reservaciones()
+    {
+        return $this->hasMany(Reservacion::class, 'id_tipo_reservacion');
+    }
 }
+
