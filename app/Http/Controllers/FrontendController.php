@@ -43,9 +43,9 @@ class FrontendController extends Controller
     
         // Solo tipos activos
         $tipos = $cancha->tiposReservacion()
-            ->wherePivot('activo', true)
-            ->orderBy('hora_inicio')
-            ->get();
+        ->where('activo', true)
+        ->orderBy('hora_inicio')
+        ->get();
     
         if ($tipos->isEmpty()) {
             return back()->with('error', 'No hay tipos de reservación configurados.');
@@ -76,31 +76,23 @@ class FrontendController extends Controller
     
         $fecha = $request->query('fecha', Carbon::today()->toDateString());
         $horas = [];
-    
-        // Generar bloques de 1 hora hasta el cierre real
-        for ($h = $inicioSistema->copy(); $h->lt($finSistema); $h->addHour()) {
-    
-            $horaStr = $h->format('H:i');
-            $precioEncontrado = null;
-    
-            foreach ($tipos as $tipo) {
-                $hInicioTipo = Carbon::createFromFormat('H:i', $normalizarHora($tipo->hora_inicio));
-                $hFinTipo    = Carbon::createFromFormat('H:i', $normalizarHora($tipo->hora_fin));
-    
-                if ($hFinTipo->lessThanOrEqualTo($hInicioTipo)) {
-                    $hFinTipo->addDay(); // corrige cruces de medianoche
-                }
-    
-                if ($h->between($hInicioTipo, $hFinTipo->copy()->subMinute())) {
-                    $precioEncontrado = $tipo->precio;
-                    break;
-                }
+        
+        
+        foreach ($tipos as $tipo) {
+
+            $inicioTipo = Carbon::createFromFormat('H:i', $normalizarHora($tipo->hora_inicio));
+            $finTipo    = Carbon::createFromFormat('H:i', $normalizarHora($tipo->hora_fin));
+
+            if ($finTipo->lessThanOrEqualTo($inicioTipo)) {
+                $finTipo->addDay();
             }
-    
-            $horas[] = [
-                'hora'   => $horaStr,
-                'precio' => $precioEncontrado,
-            ];
+
+            for ($h = $inicioTipo->copy(); $h->lt($finTipo); $h->addHour()) {
+                $horas[] = [
+                    'hora'   => $h->format('H:i'),
+                    'precio' => $tipo->precio,
+                ];
+            }
         }
         // Esto define los rangos numéricos para JS
         $inicioSistemaHora = (int) $inicioSistema->format('H');
@@ -116,11 +108,7 @@ class FrontendController extends Controller
             'tipos',
             'club',
             'fecha',
-            'horas',
-            'inicioSistema',
-            'finSistema',
-            'inicioSistemaHora',
-            'finSistemaHora'
+            'horas'
         ));
         
     }

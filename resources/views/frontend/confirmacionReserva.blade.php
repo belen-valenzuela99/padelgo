@@ -160,8 +160,7 @@
 
 </div>
 <script>
-    window.rangoInicio = {{ $inicioSistemaHora }};
-    window.rangoFin = {{ $finSistemaHora }};
+    window.horariosDisponibles = @json($horas);
 </script>
 
 <script>
@@ -212,7 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
         contenedorHorarios.innerHTML = "";
 
         // *** CAMBIO IMPORTANTE ***
-        const horas = generarHoras(window.rangoInicio, window.rangoFin);
+        const horas = generarHoras();
 
         horas.forEach(h => { // ← cambiamos el nombre del parámetro a "h"
             const horaLabel = h.label; // texto que se muestra (ej. "00:00")
@@ -333,43 +332,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ---- GENERAR HORAS ----
-    function generarHoras(inicio, fin) {
-        console.log("=== generarHoras() ===");
-        console.log("Inicio recibido:", inicio);
-        console.log("Fin recibido:", fin);
+   function generarHoras() {
+        console.log("=== generarHoras() NUEVO ===");
 
-        let arr = [];
-        const cruzaMedianoche = fin < inicio;
-
-        console.log("¿Cruza medianoche?", cruzaMedianoche);
-
-        if (cruzaMedianoche) {
-            for (let h = inicio; h < 24; h++) {
-                arr.push({
-                    label: horaDisplay(h),
-                    value: h * 60,
-                });
-            }
-            for (let h = 24; h <= fin + 24; h++) {
-                arr.push({
-                    label: horaDisplay(h),
-                    value: h * 60,
-                });
-            }
-        } else {
-            for (let h = inicio; h <= fin; h++) {
-                arr.push({
-                    label: horaDisplay(h), // ← aquí usamos la función
-                    value: h * 60,
-                });
-            }
+        if (!window.horariosDisponibles) {
+            console.error("No existen horariosDisponibles");
+            return [];
         }
 
-        console.log("Resultado final de generarHoras():", arr.map(x => x.label).join(", "));
+        let arr = window.horariosDisponibles.map(h => {
+
+            const [hora, minuto] = h.hora.split(':').map(Number);
+
+            let minutosTotales = (hora * 60) + minuto;
+
+            return {
+                label: h.hora,
+                value: minutosTotales
+            };
+        });
+
+        console.log("Resultado final:", arr.map(x => x.label).join(", "));
         return arr;
     }
-
-
 
 
 

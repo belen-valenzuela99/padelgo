@@ -50,5 +50,4 @@ YA HECHO:
 LISTA PARA FEBRERO
 - Ver solamente los horarios disponibles
 - Agregar mp (si se llega) 
-- Que cada cancha tenga un mismo horario (7:00 a 2:00 am) (por ahora no)
 - Que el precio total del abono, se calcule y se muestre al elegir las fechas.
