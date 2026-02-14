@@ -60,6 +60,12 @@
     text-align: center;
     border-color: #0c1449   ;
     background-color: #e0e3ff;
+
+}
+
+.container_card .card-body{
+    background-color: white;
+
 }
 
 .card-title {

@@ -29,7 +29,7 @@ npm run dev
 php artisan schedule:work
 
 YA HECHO:
-- Filtro por fecha y hora, y que se vean los horarios y precio. (X)
+- Filtro por fecha y hora para ver canchas disponibles. (X)
 - Validar la tarjeta (mes) (X)
 - Agregar el mapa de ubicacion en los clubes. (X)
 - Poner informacion de contacto (redes sociales) de cada club. (X)
@@ -51,3 +51,4 @@ LISTA PARA FEBRERO
 - Ver solamente los horarios disponibles
 - Agregar mp (si se llega) 
 - Que el precio total del abono, se calcule y se muestre al elegir las fechas.
+- Descargar pdf de reportes personalizados y especificar, el nombre del club y la cancha. 

@@ -14,17 +14,19 @@ class ReservacionController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
+   public function index()
+{
     $userId = auth()->id();
 
-        // Filtrar reservaciones donde:
-        // reservacion.cancha.club.id_user == gestor (usuario logueado)
-        $reservacions = Reservacion::whereHas('cancha.club', function ($q) use ($userId) {
+    $reservacions = Reservacion::whereHas('cancha.club', function ($q) use ($userId) {
             $q->where('id_user', $userId);
-        })->get();
-        return view('admin.reservacions.index', compact('reservacions'));
-    }
+        })
+        ->orderByDesc('id') // último ID primero
+        ->get();
+
+    return view('admin.reservacions.index', compact('reservacions'));
+}
+
 
     /**
      * Show the form for creating a new resource.

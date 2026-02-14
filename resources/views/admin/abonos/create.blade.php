@@ -1,6 +1,43 @@
 @extends('layouts.main')
 
-@section('content')
+@section('content') 
+<style>
+.calendario-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+
+.calendario-grid div {
+    border: 1px solid #dee2e6;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calendario-header {
+    font-weight: bold;
+    background-color: #f8f9fa;
+}
+
+.dia-activo {
+    background-color: #198754;
+    color: white;
+}
+
+.precio-card {
+    background: linear-gradient(135deg, #e9f5ee, #f8f9fa);
+    border-radius: 15px;
+}
+
+.precio-card h1 {
+    font-size: 2.5rem;
+    letter-spacing: 1px;
+}
+</style>
+
+
 <div class="container mt-4">
     <h3 class="mb-3">Crear Abono</h3>
 
@@ -33,12 +70,17 @@
         <div class="card mb-3">
             <div class="card-body">
                 <label class="form-label fw-bold">Cancha</label>
-                <select name="cancha_id" class="form-control" required>
+                <select name="cancha_id" id="cancha_id" class="form-control" required>
                     <option value="">Seleccionar cancha</option>
                     @foreach($canchas as $cancha)
-                        <option value="{{ $cancha->id }}"> <span class="text-secondary"> {{ $cancha->club->nombre  }} </span> -  {{ $cancha->nombre }} </option>
+                        <option value="{{ $cancha->id }}"
+                            data-duracion="{{ $cancha->duracion_maxima }}"
+                            data-tipos='@json($cancha->tiposReservacion)'>
+                            {{ $cancha->club->nombre }} - {{ $cancha->nombre }}
+                        </option>
                     @endforeach
                 </select>
+
             </div>
         </div>
           </div>
@@ -73,22 +115,29 @@
                 </select>
             </div>
 
-            <div class="col-md-2">
+                        <div class="col-md-2">
                 <label class="form-label fw-bold">Desde</label>
-                <input type="time" name="hora_inicio" class="form-control" required>
+                <select name="hora_inicio" id="hora_inicio" class="form-control" required>
+                    <option value="">Seleccione hora</option>
+                </select>
             </div>
 
             <div class="col-md-2">
-                <label class="form-label fw-bold">Hasta</label>
-                <input type="time" name="hora_fin" class="form-control" required>
+                <label class="form-label fw-bold">Duración</label>
+                <select id="duracion" class="form-control" required>
+                    <option value="">Seleccione duración</option>
+                </select>
             </div>
+
+            <input type="hidden" name="hora_fin" id="hora_fin">
+
         </div>
 
         {{-- ================= CALENDARIO ================= --}}
         <div class="card mt-4">
             <div class="card-body">
                 <h6 class="fw-bold mb-2">Fechas del abono</h6>
-                <div id="calendario" class="row g-1 text-center"></div>
+                <div id="calendario" class="calendario-grid"></div>
                 <small class="text-muted">Se resaltan automáticamente los días del abono</small>
             </div>
         </div>
@@ -96,7 +145,18 @@
         {{-- ================= PRECIO ================= --}}
         <div class="mt-3">
             <label class="form-label fw-bold">Precio</label>
-            <input type="number" name="precio" class="form-control" step="0.01" required>
+            <!-- Input oculto que sigue enviando el valor -->
+            <input type="hidden" name="precio" id="precio">
+
+            <div class="card mt-4 shadow-sm border-0 precio-card">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Total del Abono</h6>
+                    <h1 class="fw-bold text-success mb-0" id="precioVisual">
+                        $ 0
+                    </h1>
+                </div>
+</div>
+
         </div>
 
         {{-- ================= RESUMEN ================= --}}
@@ -114,6 +174,8 @@
 
 {{-- ================= JS ================= --}}
 <script>
+    let cantidadFechas = 0;
+
 const usuarios = [...document.querySelectorAll('#userSelect option')];
 const buscador = document.getElementById('buscadorUsuario');
 const userSelect = document.getElementById('userSelect');
@@ -140,24 +202,46 @@ const dias = {
 };
 
 function generarCalendario() {
+
     calendario.innerHTML = '';
+
     if (!mesSelect.value || !diaSelect.value) return;
 
     const year = new Date().getFullYear();
-    const mes = mesSelect.value - 1;
+    const mes = parseInt(mesSelect.value) - 1;
     const diaObjetivo = dias[diaSelect.value];
 
     const totalDias = new Date(year, mes + 1, 0).getDate();
 
     let fechas = [];
+    cantidadFechas = 0;
 
+    const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+    // 🔹 Headers
+    diasSemana.forEach(d => {
+        const div = document.createElement('div');
+        div.className = 'calendario-header';
+        div.innerText = d;
+        calendario.appendChild(div);
+    });
+
+    const primerDiaMes = new Date(year, mes, 1).getDay();
+
+    // 🔹 Espacios vacíos
+    for (let i = 0; i < primerDiaMes; i++) {
+        const div = document.createElement('div');
+        calendario.appendChild(div);
+    }
+
+    // 🔹 Días reales
     for (let d = 1; d <= totalDias; d++) {
+
         const fecha = new Date(year, mes, d);
         const div = document.createElement('div');
-        div.className = 'col-1 border p-2';
 
         if (fecha.getDay() === diaObjetivo) {
-            div.classList.add('bg-success', 'text-white');
+            div.classList.add('dia-activo');
             fechas.push(d);
         }
 
@@ -165,14 +249,143 @@ function generarCalendario() {
         calendario.appendChild(div);
     }
 
+    cantidadFechas = fechas.length;
+
     resumen.innerHTML = `
         Día: <b>${diaSelect.value}</b><br>
         Mes: <b>${mesSelect.options[mesSelect.selectedIndex].text}</b><br>
-        Fechas: <b>${fechas.join(', ')}</b>
+        Fechas: <b>${fechas.join(', ')}</b><br>
+        Total días del abono: <b>${cantidadFechas}</b>
     `;
+
+    actualizarPrecioYFin();
 }
+
+
+
 
 mesSelect.addEventListener('change', generarCalendario);
 diaSelect.addEventListener('change', generarCalendario);
+
+const canchaSelect = document.getElementById("cancha_id");
+const horaInicioSelect = document.getElementById("hora_inicio");
+const duracionSelect = document.getElementById("duracion");
+const precioInput = document.getElementById("precio");
+const horaFinInput = document.getElementById("hora_fin");
+
+let tipos = [];
+let duracionMaxima = 1;
+
+canchaSelect.addEventListener("change", function() {
+
+    const selected = this.selectedOptions[0];
+    if (!selected) return;
+
+    tipos = JSON.parse(selected.dataset.tipos || "[]");
+    duracionMaxima = parseInt(selected.dataset.duracion || 1);
+
+
+    construirHoras();
+    construirDuraciones();
+
+    //  RESET COMPLETO
+    horaInicioSelect.value = "";
+    duracionSelect.value = "";
+    horaFinInput.value = "";
+
+    precioInput.value = 0;
+    document.getElementById("precioVisual").innerText = "$ 0";
+});
+
+
+function construirHoras() {
+    horaInicioSelect.innerHTML = '<option value="">Seleccione hora</option>';
+
+    tipos.forEach(tipo => {
+
+        let inicio = convertirAMinutos(tipo.hora_inicio);
+        let fin = convertirAMinutos(tipo.hora_fin);
+
+        // Si cruza medianoche
+        if (fin <= inicio) {
+            fin += 24 * 60;
+        }
+
+        for (let m = inicio; m < fin; m += 60) {
+
+            const horaFormateada = minutosAHora(m);
+
+            const opt = document.createElement("option");
+            opt.value = horaFormateada;
+            opt.textContent = horaFormateada;
+            opt.dataset.precio = tipo.precio;
+
+            horaInicioSelect.appendChild(opt);
+        }
+    });
+}
+
+function construirDuraciones() {
+    duracionSelect.innerHTML = '<option value="">Seleccione duración</option>';
+
+    for (let i = 1; i <= duracionMaxima; i++) {
+        const opt = document.createElement("option");
+        opt.value = i;
+        opt.textContent = i + " hora(s)";
+        duracionSelect.appendChild(opt);
+    }
+}
+
+horaInicioSelect.addEventListener("change", actualizarPrecioYFin);
+duracionSelect.addEventListener("change", actualizarPrecioYFin);
+
+function actualizarPrecioYFin() {
+
+    const horaInicio = horaInicioSelect.value;
+    const duracion = parseInt(duracionSelect.value || 0);
+
+    if (!horaInicio || !duracion) return;
+
+    const selectedOption = horaInicioSelect.selectedOptions[0];
+    const precioBase = parseFloat(selectedOption.dataset.precio || 0);
+
+    const precioPorDia = precioBase * duracion;
+    const precioTotalAbono = precioPorDia * cantidadFechas;
+
+    precioInput.value = precioTotalAbono;
+
+    document.getElementById("precioVisual").innerText =
+    formatearMoneda(precioTotalAbono);
+
+
+
+    const horaFinal = sumarHoras(horaInicio, duracion);
+    horaFinInput.value = horaFinal;
+}
+
+function sumarHoras(hora, cantidad) {
+    const [h, m] = hora.split(':').map(Number);
+    const nueva = new Date(0, 0, 0, h + cantidad, m);
+    return nueva.toTimeString().slice(0, 8);
+}
+function convertirAMinutos(hora) {
+    const [h, m] = hora.split(':').map(Number);
+    return h * 60 + m;
+}
+
+function minutosAHora(minutos) {
+    minutos = minutos % (24 * 60);
+
+    const h = Math.floor(minutos / 60).toString().padStart(2, '0');
+    const m = (minutos % 60).toString().padStart(2, '0');
+
+    return `${h}:${m}:00`;
+}
+
+function formatearMoneda(valor) {
+    return "$ " + new Intl.NumberFormat('es-CO').format(valor);
+}
+
+
 </script>
 @endsection

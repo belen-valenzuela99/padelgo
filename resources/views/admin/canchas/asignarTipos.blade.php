@@ -22,15 +22,19 @@
 
         <div class="row mb-3">
             <div class="col">
+                <label for="Desde">Desde</label>
                 <input type="time" id="nueva_hora_inicio" class="form-control">
             </div>
             <div class="col">
+                <label for="Hasta">Hasta</label>
                 <input type="time" id="nueva_hora_fin" class="form-control">
             </div>
             <div class="col">
+                <label for="Precio"></label>
                 <input type="number" step="0.01" id="nuevo_precio" class="form-control" placeholder="Precio">
             </div>
             <div class="col"> 
+                <br>
                 <button type="button" id="btnAgregarHorario" class="btn btn-success">
                     Agregar
                 </button>

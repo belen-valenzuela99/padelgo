@@ -6,6 +6,8 @@ use App\Models\Abono;
 use App\Models\Reservacion;
 use App\Models\Canchas;
 use Carbon\Carbon;
+use App\Models\TipoReservacion;
+
 use Illuminate\Http\Request;
 
 class AbonoController extends Controller
@@ -25,20 +27,23 @@ class AbonoController extends Controller
      * FORMULARIO PARA CREAR
      */
     public function create()
-    {
-        $user = auth()->user();
+{
+    $user = auth()->user();
 
-        $canchas = Canchas::whereHas('club', function ($query) use ($user) {
+    $canchas = Canchas::with(['tiposReservacion' => function($q) {
+            $q->where('activo', true)
+              ->orderBy('hora_inicio');
+        }])
+        ->whereHas('club', function ($query) use ($user) {
             $query->where('id_user', $user->id);
         })
         ->get();
 
-        $usuarios = \App\Models\User::where('role', 2)->get();
-    
+    $usuarios = \App\Models\User::where('role', 2)->get();
 
-        return view('admin.abonos.create', compact('canchas', 'usuarios'));
+    return view('admin.abonos.create', compact('canchas', 'usuarios'));
+}
 
-    }
 
     public function edit(Abono $abono)
 { $user = auth()->user();
@@ -197,6 +202,26 @@ public function confirmar(Request $request)
 }
 private function crearAbonoConReservas($request, $fechas)
 {
+    // 🔹 Calcular duración real en horas
+    $duracion = Carbon::parse($request->hora_inicio)
+        ->diffInHours(Carbon::parse($request->hora_fin));
+
+    // 🔹 Obtener tipo activo de la cancha
+    $tipo = TipoReservacion::where('cancha_id', $request->cancha_id)
+        ->where('activo', true)
+        ->first();
+
+    if (!$tipo) {
+        return back()->with('error', 'No hay tipo de reservación activo para esta cancha.');
+    }
+
+    // 🔹 Precio por día
+    $precioPorDia = $tipo->precio * $duracion;
+
+    // 🔹 Total mensual del abono
+    $totalAbono = $precioPorDia * count($fechas);
+
+    // 🔹 Crear abono (guarda total mensual)
     $abono = Abono::create([
         'user_id' => $request->user_id,
         'cancha_id' => $request->cancha_id,
@@ -204,10 +229,11 @@ private function crearAbonoConReservas($request, $fechas)
         'mes' => $request->mes,
         'hora_inicio' => $request->hora_inicio,
         'hora_fin' => $request->hora_fin,
-        'precio' => $request->precio,
+        'precio' => $totalAbono, // 🔥 total mensual correcto
         'activo' => true,
     ]);
 
+    // 🔹 Crear reservaciones individuales (precio por día)
     foreach ($fechas as $fecha) {
         Reservacion::create([
             'user_id' => $request->user_id,
@@ -215,7 +241,7 @@ private function crearAbonoConReservas($request, $fechas)
             'reservacion_date' => $fecha,
             'hora_inicio' => $request->hora_inicio,
             'hora_final' => $request->hora_fin,
-            'precio' => $request->precio,
+            'precio' => $precioPorDia, // 🔥 precio individual
             'status' => 'programado',
             'abono_id' => $abono->id,
         ]);
@@ -224,6 +250,7 @@ private function crearAbonoConReservas($request, $fechas)
     return redirect()->route('abonos.index')
         ->with('success', 'Abono creado con fechas disponibles.');
 }
+
 
 
     /**
