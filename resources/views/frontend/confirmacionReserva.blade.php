@@ -36,6 +36,7 @@
         color: #dc3545 !important;
         cursor: not-allowed !important;
         background: #ffe5e5 !important;
+        display: none; 
     }
 
     .hora-ocupada:hover {
