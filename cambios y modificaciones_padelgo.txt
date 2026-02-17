@@ -46,9 +46,19 @@ YA HECHO:
 - Calendario para crear abonos (X)
 - Arreglar cargar reservacion desde el panel de gestor.(X)
 - Cambiar el nombre del modulo de tipo de reservacion y que solo defina el tipo de precio por horario.(X) 
-
-LISTA PARA FEBRERO
-- Ver solamente los horarios disponibles
-- Agregar mp (si se llega) 
+- Ver solamente los horarios disponibles.
 - Que el precio total del abono, se calcule y se muestre al elegir las fechas.
+
+
+NUEVOS ARREGLOS:
+- Filtro de fechas en reportes personalizados. IMPORTANTE
+- Validar las horas en reservaciones desde jugador. IMPORTANTE
+- Agregar club y precio en ticket y detalle de reservacion. 
+- Agregar simulacion de pago en abono y en reservacion desde gestor y que genere un ticket. 
+- Agregar abnonos en reporte desde gestor.
+- Orden descendente de creacion, en todas las tablas.
+- Mes en espanol en reportes estadisticos.
+- Mensaje de todos los horarios ocupados.
+- Buscar por filtros en tabla de abonos y reservaciones desde gestor. 
+- Nombre de gestor, en tabla de clubes en SuperAdmin. 
 - Descargar pdf de reportes personalizados y especificar, el nombre del club y la cancha. 
