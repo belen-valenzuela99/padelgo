@@ -17,7 +17,7 @@ class AbonoController extends Controller
      */
     public function index()
     {
-        $abonos = Abono::with(['usuario', 'cancha'])->get();
+        $abonos = Abono::with(['usuario', 'cancha']) ->orderByDesc('id')->get();
        return view('admin.abonos.index', compact('abonos'));
 
     }

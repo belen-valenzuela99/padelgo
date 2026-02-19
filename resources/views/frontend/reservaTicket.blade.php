@@ -22,6 +22,10 @@
           <td>{{ $reservacion->user->name ?? 'Desconocido' }}</td>
         </tr>
         <tr>
+          <th class="bg-light text-end">Club</th>
+          <td>{{ $reservacion->cancha->club->nombre ?? 'Sin club' }}</td>
+        </tr>
+        <tr>
           <th class="bg-light text-end">Cancha</th>
           <td>{{ $reservacion->cancha->nombre ?? 'Sin cancha' }}</td>
         </tr>
@@ -36,6 +40,10 @@
         <tr>
           <th class="bg-light text-end">Hora de Finalización</th>
           <td>{{ \Carbon\Carbon::parse($reservacion->hora_final)->format('H:i') }}</td>
+        </tr>
+        <tr>
+          <th class="bg-light text-end w-25">Precio</th>
+          <td>{{ $reservacion->precio ?? 'Sin Precio' }}</td>
         </tr>
         <tr>
           <th class="bg-light text-end">Estado</th>
@@ -127,7 +135,7 @@ async function descargarTicket() {
         ["Fecha:", "{{ \Carbon\Carbon::parse($reservacion->reservacion_date)->format('d/m/Y') }}"],
         ["Hora Inicio:", "{{ \Carbon\Carbon::parse($reservacion->hora_inicio)->format('H:i') }}"],
         ["Hora Final:", "{{ \Carbon\Carbon::parse($reservacion->hora_final)->format('H:i') }}"],
-        ["Tipo:", "{{ $reservacion->tipoReservacion->franja_horaria }} hora(s)"],
+        ["Precio:", "{{ $reservacion->precio }}"],
         ["Estado:", "{{ ucfirst($reservacion->status) }}"],
     ];
 

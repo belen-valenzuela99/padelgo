@@ -16,7 +16,6 @@
     <form action="{{ route('canchas.tipos.update', $cancha->id) }}" method="POST">
         @csrf
         @method('PUT')
-
         <hr>
         <h5>Crear nuevo horario</h5>
 

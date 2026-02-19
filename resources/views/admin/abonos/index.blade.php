@@ -33,6 +33,45 @@
     <div class="card-body p-0">
 
         <div class="table-responsive">
+                                <div class="card mb-4 shadow-sm border-0">
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+
+                    <div class="col-md-3">
+                        <label class="form-label">Mes</label>
+                        <select id="mesFiltro" class="form-select">
+                            <option value="">Todos</option>
+                            @foreach($meses as $num => $nombre)
+                                <option value="{{ $num }}">{{ $nombre }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Día</label>
+                        <select id="diaFiltro" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="Lunes">Lunes</option>
+                            <option value="Martes">Martes</option>
+                            <option value="Miércoles">Miércoles</option>
+                            <option value="Jueves">Jueves</option>
+                            <option value="Viernes">Viernes</option>
+                            <option value="Sábado">Sábado</option>
+                            <option value="Domingo">Domingo</option>
+                        </select>
+                    </div>
+
+
+                    <div class="col-md-3">
+                        <button type="button" id="limpiarFiltros"
+                                class="btn btn-outline-secondary w-100">
+                            Limpiar
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
             <table class="table table-bordered  table-hover align-middle mb-0">
 
                 <thead class="table-light">
@@ -50,7 +89,11 @@
 
                 <tbody>
                     @forelse($abonos as $abono)
-                        <tr>
+                        
+                            <tr 
+                data-mes="{{ $abono->mes }}"
+                data-dia="{{ $abono->dia_semana }}"
+            >
 
                             <td class="fw-semibold text-muted">
                                 #{{ $abono->id }}
@@ -119,4 +162,36 @@
 </div>
 
 </div>
+<script>
+const mesFiltro  = document.getElementById('mesFiltro');
+const diaFiltro  = document.getElementById('diaFiltro');
+const filas = document.querySelectorAll('tbody tr[data-mes]');
+
+function filtrarTabla() {
+    const mes  = mesFiltro.value;
+    const dia  = diaFiltro.value;
+
+    filas.forEach(fila => {
+        const mesFila = fila.dataset.mes;
+        const diaFila = fila.dataset.dia;
+
+        let visible = true;
+
+        if (mes && mesFila !== mes) visible = false;
+        if (dia && diaFila !== dia) visible = false;
+
+        fila.style.display = visible ? '' : 'none';
+    });
+}
+
+mesFiltro.addEventListener('change', filtrarTabla);
+diaFiltro.addEventListener('change', filtrarTabla);
+
+document.getElementById('limpiarFiltros').addEventListener('click', () => {
+    mesFiltro.value = '';
+    diaFiltro.value = '';
+    filtrarTabla();
+});
+</script>
+
 @endsection

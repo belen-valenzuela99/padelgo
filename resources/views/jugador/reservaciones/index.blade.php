@@ -73,6 +73,7 @@
                                                             >
                             <td>{{ $reservacion->user?->name }}</td>
 
+
                             <td class="fw-semibold">
                                 {{ $reservacion->cancha?->club?->nombre }}
                             </td>

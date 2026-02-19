@@ -19,6 +19,40 @@
     <div class="card-body p-0">
 
         <div class="table-responsive">
+                    <div class="card mb-4 shadow-sm border-0">
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+
+                    <div class="col-md-3">
+                        <label class="form-label">Desde</label>
+                        <input type="date" id="fechaDesde" class="form-control">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Hasta</label>
+                        <input type="date" id="fechaHasta" class="form-control">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Estado</label>
+                        <select id="estadoFiltro" class="form-select">
+                            <option value="">Todos</option>
+                            @foreach(\App\Models\Reservacion::STATUS as $estado)
+                                <option value="{{ $estado }}">{{ ucfirst($estado) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <button type="button" id="limpiarFiltros"
+                                class="btn btn-outline-secondary w-100">
+                            Limpiar
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
             <table class="table table-bordered table-hover align-middle mb-0">
 
                 <thead class="table-light">
@@ -37,7 +71,11 @@
 
                 <tbody>
                     @forelse($reservacions as $reservacion)
-                        <tr>
+                 <tr 
+            data-fecha="{{ \Carbon\Carbon::parse($reservacion->reservacion_date)->format('Y-m-d') }}"
+            data-status="{{ $reservacion->status }}"
+        >
+
                             <td class="fw-semibold text-muted">
                                 #{{ $reservacion->id }}
                             </td>
@@ -121,4 +159,41 @@
 </div>
 
 </div>
+<script>
+const fechaDesde   = document.getElementById('fechaDesde');
+const fechaHasta   = document.getElementById('fechaHasta');
+const estadoFiltro = document.getElementById('estadoFiltro');
+const filas = document.querySelectorAll('tbody tr[data-fecha]');
+
+
+function filtrarTabla() {
+    const desde  = fechaDesde.value;
+    const hasta  = fechaHasta.value;
+    const estado = estadoFiltro.value;
+
+    filas.forEach(fila => {
+        const fechaFila  = fila.dataset.fecha;
+        const estadoFila = fila.dataset.status;
+
+        let visible = true;
+
+        if (desde && fechaFila < desde) visible = false;
+        if (hasta && fechaFila > hasta) visible = false;
+        if (estado && estadoFila !== estado) visible = false;
+
+        fila.style.display = visible ? '' : 'none';
+    });
+}
+
+fechaDesde.addEventListener('change', filtrarTabla);
+fechaHasta.addEventListener('change', filtrarTabla);
+estadoFiltro.addEventListener('change', filtrarTabla);
+
+document.getElementById('limpiarFiltros').addEventListener('click', () => {
+    fechaDesde.value = '';
+    fechaHasta.value = '';
+    estadoFiltro.value = '';
+    filtrarTabla();
+});
+</script>
 @endsection

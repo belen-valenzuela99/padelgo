@@ -53,12 +53,12 @@ YA HECHO:
 NUEVOS ARREGLOS:
 - Filtro de fechas en reportes personalizados. IMPORTANTE
 - Validar las horas en reservaciones desde jugador. IMPORTANTE
-- Agregar club y precio en ticket y detalle de reservacion. 
+- Agregar club y precio en ticket y detalle de reservacion. (X) 
 - Agregar simulacion de pago en abono y en reservacion desde gestor y que genere un ticket. 
 - Agregar abnonos en reporte desde gestor.
-- Orden descendente de creacion, en todas las tablas.
+- Orden descendente de creacion, en todas las tablas. (X) 
 - Mes en espanol en reportes estadisticos.
 - Mensaje de todos los horarios ocupados.
 - Buscar por filtros en tabla de abonos y reservaciones desde gestor. 
-- Nombre de gestor, en tabla de clubes en SuperAdmin. 
+- Nombre de gestor, en tabla de clubes en SuperAdmin. (X)
 - Descargar pdf de reportes personalizados y especificar, el nombre del club y la cancha. 

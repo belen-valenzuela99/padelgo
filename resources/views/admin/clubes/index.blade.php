@@ -58,7 +58,7 @@
                             </td>
 
                             <td>
-                                {{ $club->id_user }}
+                                {{ $club->gestor->name }}
                             </td>
 
                             <td class="text-muted small" style="max-width: 220px;">
