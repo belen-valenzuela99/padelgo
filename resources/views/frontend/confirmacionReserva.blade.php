@@ -36,7 +36,7 @@
         color: #dc3545 !important;
         cursor: not-allowed !important;
         background: #ffe5e5 !important;
-        display: none; 
+       /*display: none; */
     }
 
     .hora-ocupada:hover {
@@ -68,7 +68,7 @@
         background: #e0e0e0;
         color: #777;
         cursor: not-allowed !important;
-        display:none;
+       /* display:none; */
     }
     .hora-pasada.hora-box:hover {
         background: #e0e0e0;
@@ -82,6 +82,7 @@
     <h4 class="fw-bold">{{ $club->nombre }} - {{ $cancha->nombre }}</h4>
     <p>{{ $cancha->descripcion }}</p>
     <p class="text-muted" style="font-size: 13px;">Dirección: {{ $club->direccion }}</p>
+    <div id="horariosContainer"></div>
 
     {{-- FECHA --}}
     <div class="d-flex justify-content-center align-items-center gap-3 mb-3">
@@ -110,7 +111,7 @@
     <input type="hidden" id="fecha" value="{{ $fecha }}">
 
     {{-- HORARIOS --}}
-    <h6 class="mb-2">Selecciona un horario:</h6>
+    <h6 id="seleccionhora" class="mb-2">Selecciona un horario:</h6>
 
     <div id="contenedorHorarios" class="horarios">
         @foreach($horas as $h)
@@ -162,6 +163,7 @@
 </div>
 <script>
     window.horariosDisponibles = @json($horas);
+    console.log(window.horariosDisponibles);
 </script>
 
 <script>
@@ -528,6 +530,79 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+const container = document.getElementById('horariosContainer');
+const btnSubmit = document.getElementById('btnSubmit');
+const titulo = document.getElementById('seleccionhora');
+
+
+// Verificar que existan horarios
+if (!window.horariosDisponibles || !window.horariosDisponibles.length) {
+    container.innerHTML = `
+        <div class="alert alert-warning text-center shadow-sm">
+            No hay horarios disponibles
+        </div>
+    `;
+    btnSubmit.style.display = 'none';
+    titulo.style.display = 'none';
+    contenedorHorarios.style.display = 'none';
+
+    return;
+}
+
+// Fecha seleccionada (string yyyy-mm-dd)
+const fechaInput = document.getElementById('fecha').value;
+
+// Fecha de hoy en formato yyyy-mm-dd
+const hoy = new Date();
+const hoyString = hoy.toISOString().split('T')[0];
+
+// Solo filtrar si es hoy
+let horariosValidos = window.horariosDisponibles;
+
+if (fechaInput === hoyString) {
+
+    const horaActual = hoy.getHours();
+    const minutoActual = hoy.getMinutes();
+
+    horariosValidos = window.horariosDisponibles.filter(h => {
+
+        const [hora, minuto] = h.hora.split(':').map(Number);
+
+        if (hora > horaActual) return true;
+        if (hora === horaActual && minuto > minutoActual) return true;
+
+        return false;
+    });
+}
+
+// Si no quedan horarios válidos
+if (!horariosValidos.length) {
+    container.innerHTML = `
+        <div class="alert alert-warning text-center shadow-sm">
+            No hay horarios disponibles
+        </div>
+    `;
+btnSubmit.style.display = 'none';
+titulo.style.display = 'none';
+contenedorHorarios.style.display = 'none';
+
+    return;
+}
+
+
+
+// Renderizar horarios
+let html = '';
+
+horariosValidos.forEach(h => {
+    html += `
+        <button class="btn btn-outline-primary m-1">
+            ${h.hora} - $${h.precio}
+        </button>
+    `;
+});
+
+container.innerHTML = html;
 });
 </script>
 

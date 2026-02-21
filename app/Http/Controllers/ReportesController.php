@@ -172,8 +172,27 @@ public function ingresosTotales()
         $canchas = Canchas::whereHas('club', function ($q) use ($userId) {
             $q->where('id_user', $userId);
         })->get();
+    
+        // Total de abonos activos del gestor
+        $totalAbonosActivos = Abono::where('activo', true)
+        ->whereHas('cancha.club', function ($q) use ($userId) {
+            $q->where('id_user', $userId);
+        })
+        ->count();
 
+        $ingresosAbonos = Abono::where('activo', true)
+        ->whereHas('cancha.club', function ($q) use ($userId) {
+            $q->where('id_user', $userId);
+        })
+        ->sum('precio');
 
+        $abonosPorMes = Abono::selectRaw('mes, COUNT(*) as total')
+        ->whereHas('cancha.club', function ($q) use ($userId) {
+            $q->where('id_user', $userId);
+        })
+        ->groupBy('mes')
+        ->orderBy('mes')
+        ->pluck('total', 'mes');
 
 
         return view('gestor.dashboard', compact(
@@ -188,7 +207,10 @@ public function ingresosTotales()
             'reservasPendientes',
             'ingresosPorMes',
             'clubs',
-            'canchas'
+            'canchas',
+            'totalAbonosActivos',
+            'ingresosAbonos',
+            'abonosPorMes'
         ));
 
 }

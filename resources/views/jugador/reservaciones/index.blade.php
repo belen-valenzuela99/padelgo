@@ -56,6 +56,7 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light text-center">
                     <tr>
+                        <th>id</th>
                         <th>Usuario</th>
                         <th>Club</th>
                         <th>Cancha</th>
@@ -71,6 +72,9 @@
                         <tr data-fecha="{{ $reservacion->reservacion_date }}"
                              data-status="{{ $reservacion->status }}"
                                                             >
+
+                            <td>{{ $reservacion->id }}</td>
+
                             <td>{{ $reservacion->user?->name }}</td>
 
 

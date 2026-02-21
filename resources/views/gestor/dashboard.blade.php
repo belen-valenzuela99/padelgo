@@ -20,7 +20,7 @@
 <br>
 <br>
     {{-- KPIs --}}
-    <div class="row mb-4">
+    <div class="row mb-4 gap-2">
 
         <div class="col-md-3">
             <div class="card shadow-sm border-0">
@@ -56,6 +56,28 @@
                 <div class="card-body text-center">
                     <h6 class="text-muted">Clubes</h6>
                     <h2 class="fw-bold">{{ $totalClubes }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Abonos activos</h6>
+                    <h2 class="fw-bold text-primary">
+                        {{ $totalAbonosActivos }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Ingresos por Abonos</h6>
+                    <h2 class="fw-bold text-success">
+                        $ {{ number_format($ingresosAbonos, 0, ',', '.') }}
+                    </h2>
                 </div>
             </div>
         </div>
@@ -193,7 +215,7 @@
                 @forelse($ingresosPorMes as $mes => $total)
                     <tr>
                         <td>
-                            {{ \Carbon\Carbon::create()->month($mes)->translatedFormat('F') }}
+                           {{ ucfirst(\Carbon\Carbon::create()->locale('es')->month($mes)->translatedFormat('F')) }}
                         </td>
                         <td>
                             ${{ number_format($total, 0, ',', '.') }}
@@ -225,10 +247,13 @@
     </div>
 
     <div class="col-md-6 mb-4">
-        <div class="card p-3">
-            <h5>Canchas más reservadas</h5>
-            <canvas id="canchasChart"></canvas>
-        </div>
+        <div class="card p-4 text-center">
+    <h5 class="mb-3">Canchas más reservadas</h5>
+
+    <div style="max-width: 280px; margin:auto;">
+        <canvas id="canchasChart"></canvas>
+    </div>
+</div>
     </div>
 </div>
 <div class="row">
@@ -238,7 +263,16 @@
             <canvas id="ingresosMesChart"></canvas>
         </div>
     </div>
+
+<div class="col-md-6 mb-4">
+    <div class="card p-3">
+        <h5>Abonos por mes</h5>
+        <canvas id="abonosMesChart"></canvas>
+    </div>
 </div>
+</div>
+
+
 
 
 
@@ -294,7 +328,15 @@
     const reservasMesRaw = @json($reservasPorMes);
 
     // Convertimos objeto -> arrays
-    const reservasMesLabels = Object.keys(reservasMesRaw).map(mes => 'Mes ' + mes);
+    const meses = [
+    '', // índice 0 vacío para que coincida con el número del mes
+    'Enero', 'Febrero', 'Marzo', 'Abril',
+    'Mayo', 'Junio', 'Julio', 'Agosto',
+    'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+];
+
+    const reservasMesLabels = Object.keys(reservasMesRaw)
+    .map(mes => meses[parseInt(mes)]);
     const reservasMesData   = Object.values(reservasMesRaw);
 
     new Chart(document.getElementById('reservasMesChart'), {
@@ -333,10 +375,10 @@
 const ingresosRaw = @json($ingresosPorMes);
 
 // Nombres de meses en español
-const meses = [
-    '', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-];
+//const meses = [
+   // '', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    //'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+//];
 
 // Labels y datos
 const ingresosLabels = Object.keys(ingresosRaw)
@@ -438,6 +480,26 @@ document.getElementById('formReporte').addEventListener('submit', function (e) {
             </div>
         `;
     });
+});
+
+const abonosMesRaw = @json($abonosPorMes);
+const mesesOrdenadosAbonos = Object.keys(abonosMesRaw)
+    .map(Number)
+    .sort((a, b) => a - b);
+
+const abonosMesLabels = mesesOrdenadosAbonos.map(m => meses[m]);
+const abonosMesData   = mesesOrdenadosAbonos.map(m => abonosMesRaw[m]);
+
+new Chart(document.getElementById('abonosMesChart'), {
+    type: 'bar',
+    data: {
+        labels: abonosMesLabels,
+        datasets: [{
+            label: 'Abonos',
+            data: abonosMesData,
+            borderWidth: 1
+        }]
+    }
 });
 </script>
 @endsection

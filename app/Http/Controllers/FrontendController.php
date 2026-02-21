@@ -164,7 +164,7 @@ public function horasOcupadas($canchaId, $fecha)
         'tipoReservacion'
     ])
     ->where('user_id', $userId)
-    ->orderBy('reservacion_date', 'desc')
+    ->orderBy('id', 'desc')
     ->get();
 
 
@@ -195,17 +195,26 @@ public function prepararReservacion(Request $request)
     // Buscar la cancha
     $cancha = Canchas::find($request->cancha_id);
 
-    // ==============================
+        // ==============================
     // 2️⃣ Buscar tipo de reservación por horario
     // ==============================
-    $tipos = TipoReservacion::all();
+
+    $tipos = TipoReservacion::where('cancha_id', $request->cancha_id)
+        ->where('activo', true)
+        ->orderBy('hora_inicio')
+        ->get();
+
+    if ($tipos->isEmpty()) {
+        return back()->with('error', 'La cancha no tiene tipos de reservación configurados.');
+    }
+
     $tipoSeleccionado = null;
 
     $carbonHoraInicio = Carbon::createFromFormat('H:i:s', $horaInicio);
 
     foreach ($tipos as $tipo) {
-        $inicioTipo = Carbon::parse($tipo['hora_inicio']);
-        $finTipo    = Carbon::parse($tipo['hora_fin']);
+        $inicioTipo = Carbon::parse($tipo->hora_inicio);
+        $finTipo    = Carbon::parse($tipo->hora_fin);
 
         if ($carbonHoraInicio->gte($inicioTipo) && $carbonHoraInicio->lt($finTipo)) {
             $tipoSeleccionado = $tipo;
