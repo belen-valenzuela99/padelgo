@@ -5,6 +5,7 @@
 
 @section('content')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <h1>Bienvenido al Dashboard Gestor</h1>
 
@@ -470,9 +471,13 @@ document.getElementById('formReporte').addEventListener('submit', function (e) {
         }
     })
     .then(res => res.text())
-    .then(html => {
-        resultado.innerHTML = html;
-    })
+    .then(html => { resultado.innerHTML = html;
+
+    // 👇 MOSTRAR BOTÓN PDF
+    document
+        .getElementById("contenedorPdfBtn")
+        .classList.remove("d-none");
+})
     .catch(() => {
         resultado.innerHTML = `
             <div class="alert alert-danger">
@@ -501,5 +506,108 @@ new Chart(document.getElementById('abonosMesChart'), {
         }]
     }
 });
+
+async function descargarReportePDFPro() {
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF("p", "mm", "a4");
+
+    const margin = 15;
+    let y = 20;
+
+    const fechaInicio = document.querySelector("input[name='fecha_inicio']").value;
+    const fechaFin = document.querySelector("input[name='fecha_fin']").value;
+    const clubSelect = document.getElementById("clubSelect");
+    const clubNombre = clubSelect.options[clubSelect.selectedIndex].text;
+
+    const fechaEmision = new Date().toLocaleString();
+
+    function checkPageSpace(extra = 10) {
+        if (y + extra > 280) {
+            doc.addPage();
+            y = 20;
+        }
+    }
+
+    // HEADER
+    doc.setFillColor(25, 70, 140);
+    doc.rect(0, 0, 210, 35, "F");
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(255,255,255);
+    doc.text("INFORME DE REPORTE PERSONALIZADO", margin, 20);
+
+    doc.setFontSize(11);
+    doc.text("Sistema de Gestión Deportiva", margin, 28);
+
+    doc.setTextColor(0,0,0);
+    y = 45;
+
+    // INFO GENERAL
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("Información General", margin, y);
+    y += 8;
+
+    doc.setFont("helvetica", "");
+    doc.setFontSize(11);
+
+    doc.text("Club: " + clubNombre, margin, y);
+    y += 6;
+
+    doc.text("Período: " + fechaInicio + " al " + fechaFin, margin, y);
+    y += 6;
+
+    doc.text("Fecha de emisión: " + fechaEmision, margin, y);
+    y += 10;
+
+    doc.line(margin, y, 195, y);
+    y += 10;
+
+    // CONTENIDO DEL REPORTE
+    const contenido = document.getElementById("resultadoReporte");
+    const texto = contenido.innerText.split("\n");
+
+    doc.setFontSize(11);
+
+    texto.forEach(linea => {
+        if (linea.trim() !== "") {
+            checkPageSpace(8);
+            doc.text(linea.trim(), margin, y);
+            y += 7;
+        }
+    });
+
+    // FOOTER CON PAGINACIÓN
+    const pageCount = doc.getNumberOfPages();
+
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(9);
+        doc.setTextColor(120);
+        doc.text(
+            "Documento generado automáticamente por el sistema.",
+            margin,
+            290
+        );
+        doc.text(
+            "Página " + i + " de " + pageCount,
+            170,
+            290
+        );
+    }
+
+    const nombreArchivo =
+        "Reporte_" +
+        clubNombre.replace(/\s/g, "_") +
+        "_" +
+        fechaInicio +
+        "_" +
+        fechaFin +
+        ".pdf";
+
+    doc.save(nombreArchivo);
+}
 </script>
 @endsection

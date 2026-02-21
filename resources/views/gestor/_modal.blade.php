@@ -1,4 +1,5 @@
 <!-- MODAL -->
+
 <div class="modal fade" id="reporteModal" tabindex="-1">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
@@ -92,6 +93,11 @@
 
                 <hr>
 
+                 <div class="text-end mb-3 d-none" id="contenedorPdfBtn">
+                    <button class="btn btn-danger" onclick="descargarReportePDFPro()">
+                        📄 Descargar Informe 
+                    </button>
+                </div>
                 {{-- RESULTADO (SE INYECTA POR AJAX) --}}
                 <div id="resultadoReporte">
                     <div class="text-center text-muted py-4">

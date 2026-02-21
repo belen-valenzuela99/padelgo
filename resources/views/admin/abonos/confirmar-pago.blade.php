@@ -4,110 +4,92 @@
 
 <div class="container my-5">
 
-    <h2 class="titulo-minimal text-center mb-1">Confirmar Reservación</h2>
-    <p class="subtitulo-minimal text-center mb-4">
-        Revisá los datos antes de realizar la compra
-    </p>
+    <h2 class="text-center mb-4">Confirmar Abono</h2>
 
     <div class="row g-4">
 
-        {{-- ======================================
-               TARJETA IZQUIERDA - DETALLE
-        ======================================= --}}
+        {{-- DETALLE --}}
         <div class="col-md-6">
             <div class="card shadow border-0 rounded-4">
-                <div class="card-header text-white" style="background-color: var(--pg-blue)">
-                    <strong>Detalle de la Reserva</strong>
+                <div class="card-header bg-primary text-white">
+                    Detalle del Abono
                 </div>
 
                 <div class="card-body">
-                    
-                    <p class="mb-2"><strong>Club:</strong> {{ $preReserva->cancha->club->nombre }}</p>
-                    <p class="mb-2"><strong>Cancha:</strong> {{ $preReserva->cancha->nombre }}</p>
 
-                    <p class="mb-2">
-                        <strong>Fecha:</strong>
-                        {{ \Carbon\Carbon::parse($preReserva->fecha)->format('d/m/Y') }}
+                    <p><strong>Jugador:</strong> {{ $preAbono->usuario->name }}</p>
+                    <p><strong>Club:</strong> {{ $preAbono->club->nombre }}</p>
+                    <p><strong>Cancha:</strong> {{ $preAbono->cancha->nombre }}</p>
+
+                    <p><strong>Mes:</strong> {{ $preAbono->mes }}</p>
+                    <p><strong>Día:</strong> {{ $preAbono->dia_semana }}</p>
+                    <p><strong>Horario:</strong> 
+                        {{ $preAbono->hora_inicio }} - {{ $preAbono->hora_fin }}
                     </p>
 
-                    <p class="mb-2"><strong>Hora Inicio:</strong> {{ $preReserva->hora_inicio }}</p>
-                    <p class="mb-2"><strong>Hora Final:</strong> {{ $preReserva->hora_final }}</p>
-
-                    <p class="mb-2">
-                        <strong>Duración:</strong> {{ $preReserva->duracion }} hora(s)
-                    </p>
-
-                    <p class="mb-2">
-                        <strong>Precio por hora:</strong> 
-                        ${{ number_format($preReserva->precio_por_hora, 0, ',', '.') }}
-                    </p>
+                    <p><strong>Fechas del abono:</strong></p>
+                    <ul>
+                        @foreach($preAbono->fechas as $fecha)
+                            <li>{{ \Carbon\Carbon::parse($fecha)->format('d/m/Y') }}</li>
+                        @endforeach
+                    </ul>
 
                     <hr>
 
                     <h4 class="text-success">
-                        <strong>Total:</strong>
-                            ${{ number_format($preReserva->total, 0, ',', '.') }}
+                        Total: ${{ number_format($preAbono->precio,0,',','.') }}
                     </h4>
 
                 </div>
             </div>
         </div>
 
-        {{-- ======================================
-               TARJETA DERECHA - "PAGO"
-        ======================================= --}}
+        {{-- PAGO --}}
         <div class="col-md-6">
             <div class="card shadow border-0 rounded-4">
-                <div class="card-header text-white" style="background-color: var(--pg-green-dark)">
-                    <strong>Información de Pago</strong>
+                <div class="card-header bg-success text-white">
+                    Información de Pago
                 </div>
 
                 <div class="card-body">
 
-                    <form action="{{ route('jugador.reservar.confirmada') }}" method="POST" id="formPago">
+                    <form action="{{ route('admin.abonos.storeFinal') }}" method="POST" id="formPago">
                         @csrf
 
-                        <input type="hidden" name="fecha" value="{{ $preReserva->fecha }}">
-                        <input type="hidden" name="hora_inicio" value="{{ $preReserva->hora_inicio }}">
-                        <input type="hidden" name="hora_final" value="{{ $preReserva->hora_final }}">
-                        <input type="hidden" name="cancha_id" value="{{ $preReserva->cancha_id }}">
-                        <input type="hidden" name="duracion" value="{{ $preReserva->duracion }}">
-                        <input type="hidden" name="precio_por_hora" value="{{ $preReserva->precio_por_hora }}">
-                        <input type="hidden" name="total" value="{{ $preReserva->total }}">
-                        <input type="hidden" name="id_tipo_reservacion" value="{{ $preReserva->id_tipo_reservacion }}">
+                        {{-- reenviamos todos los datos --}}
+                        <input type="hidden" name="user_id" value="{{ $preAbono->usuario->id }}">
+                        <input type="hidden" name="cancha_id" value="{{ $preAbono->cancha->id }}">
+                        <input type="hidden" name="mes" value="{{ $preAbono->mes }}">
+                        <input type="hidden" name="dia_semana" value="{{ $preAbono->dia_semana }}">
+                        <input type="hidden" name="hora_inicio" value="{{ $preAbono->hora_inicio }}">
+                        <input type="hidden" name="hora_fin" value="{{ $preAbono->hora_fin }}">
+                        <input type="hidden" name="precio" value="{{ $preAbono->precio }}">
 
-                        {{-- Nombre del titular --}}
                         <div class="mb-3">
                             <label class="form-label">Nombre del Titular</label>
-                            <input type="text" id="titular" class="form-control"
-                                   placeholder="Ej: Belén Valenzuela" required>
+                            <input type="text" class="form-control" required>
                         </div>
 
-                        {{-- Número de tarjeta --}}
                         <div class="mb-3">
                             <label class="form-label">Número de Tarjeta</label>
-                            <input type="text" id="numTarjeta" class="form-control"
-                                   maxlength="19" placeholder="XXXX XXXX XXXX XXXX" required>
+                            <input type="text" id="numTarjeta" class="form-control" maxlength="19" required>
                         </div>
 
-                        {{-- Vencimiento / CVV --}}
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">Vencimiento</label>
-                                <input type="text" id="vencimiento" class="form-control"
-                                       maxlength="5" placeholder="MM/AA" required>
+                                <input type="text" id="vencimiento" class="form-control" maxlength="5" required>
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label">CVV</label>
-                                <input type="password" id="cvv" class="form-control"
-                                       maxlength="3" required>
+                                <input type="password" id="cvv" class="form-control" maxlength="3" required>
                             </div>
                         </div>
 
                         <div class="mt-4">
-                            <button type="submit" class="btn btn-success w-100 py-2">
-                                Finalizar Compra
+                            <button type="submit" class="btn btn-success w-100">
+                                Confirmar y Crear Abono
                             </button>
                         </div>
 
@@ -118,7 +100,6 @@
         </div>
 
     </div>
-
 </div>
 
 {{-- ============================

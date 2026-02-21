@@ -91,6 +91,8 @@ Route::middleware(['auth', 'role:gestor'])->prefix('gestor')->group(function () 
     Route::put('/canchas/{id}/tipos', [CanchaTipoReservacionController::class, 'update'])->name('canchas.tipos.update');
     Route::resource('abonos', AbonoController::class);
     Route::post('/abonos/confirmar', [AbonoController::class, 'confirmar'])->name('abonos.confirmar');
+    Route::post('/abonos/preparar', [AbonoController::class, 'prepararAbono'])->name('admin.abonos.preparar');
+    Route::post('/abonos/store-final', [AbonoController::class, 'storeFinal'])->name('admin.abonos.storeFinal');
     Route::get('/', [ReportesController::class, 'dashboard'])->name('reportes.dashboard');
     Route::get('/reservas-por-mes', [ReportesController::class, 'reservasPorMes'])->name('reportes.reservas_mes');
     Route::get('/canchas-mas-reservadas', [ReportesController::class, 'canchasMasReservadas'])->name('reportes.canchas');
@@ -98,6 +100,8 @@ Route::middleware(['auth', 'role:gestor'])->prefix('gestor')->group(function () 
     Route::get('/dashboard', [ReportesController::class, 'dashboard'])->name('gestor.dashboard');
     Route::get('/reportes', [ReportesController::class, 'index'])->middleware(['auth'])->name('reportes.index');
     Route::post('/reportes/generar', [ReportesController::class, 'generar'])->middleware(['auth'])->name('reportes.generar');
+    Route::post('/reservaciones/preparar',[ReservacionController::class, 'prepararReservacionAdmin'])->name('admin.reservacions.preparar');
+    Route::post('/reservaciones/store-final',[ReservacionController::class, 'storeFinal'])->name('admin.reservacions.storeFinal');
 
 
 

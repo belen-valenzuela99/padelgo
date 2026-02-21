@@ -193,7 +193,7 @@ public function prepararReservacion(Request $request)
         ->format('H:i:s');
 
     // Buscar la cancha
-    $cancha = Canchas::find($request->cancha_id);
+    $cancha = Canchas::with('club')->find($request->cancha_id);
 
         // ==============================
     // 2️⃣ Buscar tipo de reservación por horario
@@ -278,6 +278,7 @@ public function prepararReservacion(Request $request)
 
         'cancha'              => $cancha,
         'cancha_id'           => $cancha->id,
+        'club'                => $cancha->club,
     ];
 
     // ==============================

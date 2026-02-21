@@ -4,7 +4,7 @@
 <div class="container">
     <h2>Nueva Reservación</h2>
 
-    <form action="{{ route('reservacions.store') }}" method="POST">
+    <form action="{{ route('admin.reservacions.preparar') }}" method="POST">
         @csrf
 
 

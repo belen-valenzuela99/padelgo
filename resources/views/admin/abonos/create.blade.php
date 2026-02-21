@@ -41,7 +41,7 @@
 <div class="container mt-4">
     <h3 class="mb-3">Crear Abono</h3>
 
-    <form action="{{ route('abonos.store') }}" method="POST" id="abonoForm">
+    <form action="{{ route('admin.abonos.preparar') }}" method="POST" id="abonoForm">
         @csrf
 
         {{-- ================= USUARIO ================= --}}

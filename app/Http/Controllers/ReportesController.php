@@ -227,12 +227,15 @@ public function index()
         return view('gestor.reportes', compact('clubs', 'canchas'));
     }
 
-   public function generar(Request $request)
+ public function generar(Request $request)
 {
     $tipos = $request->input('tipos', []);
 
     $clubId   = $request->club_id;
     $canchaId = $request->cancha_id;
+
+    $fechaInicio = $request->fecha_inicio;
+    $fechaFin    = $request->fecha_fin;
 
     $data = [];
 
@@ -243,27 +246,38 @@ public function index()
     */
     if (in_array('ingresos', $tipos)) {
 
-       
+        $ingresos = Canchas::query()
 
-     $ingresosPorCancha = Canchas::query()
-    ->when($clubId !== 'all', fn($q) => $q->where('canchas.id_club', $clubId))
-    ->when($canchaId !== 'all', fn($q) => $q->where('canchas.id', $canchaId))
+            ->join('clubs', 'canchas.id_club', '=', 'clubs.id')
 
-    ->leftJoin('reservacions', function ($join) {
-        $join->on('canchas.id', '=', 'reservacions.cancha_id')
-             ->whereIn('reservacions.status', ['programado', 'turno completado']);
-    })
-    ->selectRaw('
-        canchas.nombre as cancha,
-        COALESCE(SUM(reservacions.precio), 0) as total
-    ')
-    ->groupBy('canchas.nombre')
-    ->get();
+            ->when($clubId !== 'all', fn($q) =>
+                $q->where('canchas.id_club', $clubId)
+            )
 
+            ->when($canchaId !== 'all', fn($q) =>
+                $q->where('canchas.id', $canchaId)
+            )
 
-$data['ingresos'] = $ingresosPorCancha ?? 0;
-  }
+            ->leftJoin('reservacions', function ($join) use ($fechaInicio, $fechaFin) {
+                $join->on('canchas.id', '=', 'reservacions.cancha_id')
+                     ->whereIn('reservacions.status', ['programado', 'turno completado'])
+                     ->whereBetween('reservacions.reservacion_date', [$fechaInicio, $fechaFin]);
+            })
 
+            ->selectRaw('
+                clubs.nombre as club,
+                canchas.nombre as cancha,
+                COALESCE(SUM(reservacions.precio), 0) as total
+            ')
+            ->groupBy('clubs.nombre', 'canchas.nombre')
+            ->orderBy('clubs.nombre')
+            ->get();
+
+        $data['ingresos'] = [
+            'filas' => $ingresos,
+            'total_general' => $ingresos->sum('total')
+        ];
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -272,48 +286,76 @@ $data['ingresos'] = $ingresosPorCancha ?? 0;
     */
     if (in_array('reservas', $tipos)) {
 
-    $reservasPorCancha = Canchas::query()
-    ->when($clubId !== 'all', fn($q) => $q->where('canchas.id_club', $clubId))
-    ->when($canchaId !== 'all', fn($q) => $q->where('canchas.id', $canchaId))
+        $reservas = Canchas::query()
 
-    ->leftJoin('reservacions', 'canchas.id', '=', 'reservacions.cancha_id')
-    ->selectRaw('
-        canchas.nombre as cancha,
-        COUNT(reservacions.id) as total
-    ')
-    ->groupBy('canchas.nombre')
-    ->get();
-;
+            ->join('clubs', 'canchas.id_club', '=', 'clubs.id')
 
-$data['reservas'] = $reservasPorCancha ?? 0;
+            ->when($clubId !== 'all', fn($q) =>
+                $q->where('canchas.id_club', $clubId)
+            )
 
+            ->when($canchaId !== 'all', fn($q) =>
+                $q->where('canchas.id', $canchaId)
+            )
+
+            ->leftJoin('reservacions', function ($join) use ($fechaInicio, $fechaFin) {
+                $join->on('canchas.id', '=', 'reservacions.cancha_id')
+                     ->whereBetween('reservacions.reservacion_date', [$fechaInicio, $fechaFin]);
+            })
+
+            ->selectRaw('
+                clubs.nombre as club,
+                canchas.nombre as cancha,
+                COUNT(reservacions.id) as total
+            ')
+            ->groupBy('clubs.nombre', 'canchas.nombre')
+            ->orderBy('clubs.nombre')
+            ->get();
+
+        $data['reservas'] = [
+            'filas' => $reservas,
+            'total_general' => $reservas->sum('total')
+        ];
     }
 
     /*
     |--------------------------------------------------------------------------
-    | ABONOS (ESTE ERA EL QUE FALTABA)
+    | ABONOS
     |--------------------------------------------------------------------------
     */
     if (in_array('abonos', $tipos)) {
 
-    $abonosPorCancha = Canchas::query()
-    ->when($clubId !== 'all', fn($q) => $q->where('canchas.id_club', $clubId))
-    ->when($canchaId !== 'all', fn($q) => $q->where('canchas.id', $canchaId))
+        $abonos = Canchas::query()
 
-    ->leftJoin('abonos', function ($join) {
-        $join->on('canchas.id', '=', 'abonos.cancha_id')
-             ->where('abonos.activo', true);
-    })
-    ->selectRaw('
-        canchas.nombre as cancha,
-        COUNT(abonos.id) as total
-    ')
-    ->groupBy('canchas.nombre')
-    ->get();
+            ->join('clubs', 'canchas.id_club', '=', 'clubs.id')
 
+            ->when($clubId !== 'all', fn($q) =>
+                $q->where('canchas.id_club', $clubId)
+            )
 
-$data['abonos'] = $abonosPorCancha ?? 0;
+            ->when($canchaId !== 'all', fn($q) =>
+                $q->where('canchas.id', $canchaId)
+            )
 
+            ->leftJoin('abonos', function ($join) use ($fechaInicio, $fechaFin) {
+                $join->on('canchas.id', '=', 'abonos.cancha_id')
+                     ->where('abonos.activo', true)
+                     ->whereBetween('abonos.created_at', [$fechaInicio, $fechaFin]);
+            })
+
+            ->selectRaw('
+                clubs.nombre as club,
+                canchas.nombre as cancha,
+                COUNT(abonos.id) as total
+            ')
+            ->groupBy('clubs.nombre', 'canchas.nombre')
+            ->orderBy('clubs.nombre')
+            ->get();
+
+        $data['abonos'] = [
+            'filas' => $abonos,
+            'total_general' => $abonos->sum('total')
+        ];
     }
 
     return view('gestor.resultados', compact('data'));

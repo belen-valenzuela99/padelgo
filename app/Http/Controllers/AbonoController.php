@@ -7,6 +7,7 @@ use App\Models\Reservacion;
 use App\Models\Canchas;
 use Carbon\Carbon;
 use App\Models\TipoReservacion;
+use App\Models\User;
 
 use Illuminate\Http\Request;
 
@@ -321,7 +322,6 @@ $conflicto = Reservacion::where('cancha_id', $abono->cancha_id)
     }
 
 
-
     /**
      * ELIMINAR ABONO + RESERVAS
      */
@@ -331,4 +331,60 @@ $conflicto = Reservacion::where('cancha_id', $abono->cancha_id)
 
         return redirect()->back()->with('success', 'Abono eliminado correctamente.');
     }
+
+    public function prepararAbono(Request $request)
+{
+    $request->validate([
+        'user_id'      => 'required|exists:users,id',
+        'cancha_id'    => 'required|exists:canchas,id',
+        'dia_semana'   => 'required|string',
+        'mes'          => 'required|integer|min:1|max:12',
+        'hora_inicio'  => 'required',
+        'hora_fin'     => 'required',
+        'precio'       => 'required|numeric|min:0',
+    ]);
+
+    // 🔎 Analizar disponibilidad
+    $resultado = $this->analizarFechasAbono($request);
+
+    if (count($resultado['no_disponibles']) > 0) {
+
+        return view('admin.abonos.confirmar', [
+            'data'            => $request->all(),
+            'disponibles'     => $resultado['disponibles'],
+            'no_disponibles'  => $resultado['no_disponibles'],
+        ]);
+    }
+
+    // Buscar relaciones
+    $cancha  = Canchas::with('club')->findOrFail($request->cancha_id);
+    $usuario = User::findOrFail($request->user_id);
+
+    // Crear objeto tipo preReserva
+    $preAbono = (object)[
+        'usuario'      => $usuario,
+        'cancha'       => $cancha,
+        'club'         => $cancha->club,
+        'mes'          => $request->mes,
+        'dia_semana'   => $request->dia_semana,
+        'hora_inicio'  => $request->hora_inicio,
+        'hora_fin'     => $request->hora_fin,
+        'precio'       => $request->precio,
+        'fechas'       => $resultado['disponibles']
+    ];
+
+    return view('admin.abonos.confirmar-pago', compact('preAbono'));
+}
+
+public function storeFinal(Request $request)
+{
+    // Volver a analizar disponibilidad por seguridad
+    $resultado = $this->analizarFechasAbono($request);
+
+    if (count($resultado['no_disponibles']) > 0) {
+        return back()->with('error', 'Algunas fechas ya no están disponibles.');
+    }
+
+    return $this->crearAbonoConReservas($request, $resultado['disponibles']);
+}
 }

@@ -57,9 +57,13 @@ YA HECHO:
 - Buscar por filtros en tabla de abonos y reservaciones desde gestor. (X)
 - Nombre de gestor, en tabla de clubes en SuperAdmin. (X)
 - Agregar club y precio en ticket y detalle de reservacion. (X) 
+- Filtro de fechas en reportes personalizados. IMPORTANTE (X)
+- Descargar pdf de reportes personalizados y especificar, el nombre del club y la cancha. (X)
+- Agregar simulacion de pago en abono y en reservacion desde gestor y que genere un ticket. (X)
+- Validar las horas en reservaciones desde jugador. IMPORTANTE
+
 
 NUEVOS ARREGLOS:
-- Filtro de fechas en reportes personalizados. IMPORTANTE
-- Validar las horas en reservaciones desde jugador. IMPORTANTE
-- Agregar simulacion de pago en abono y en reservacion desde gestor y que genere un ticket. 
-- Descargar pdf de reportes personalizados y especificar, el nombre del club y la cancha. 
+
+
+
