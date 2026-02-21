@@ -244,40 +244,47 @@ document.addEventListener("DOMContentLoaded", () => {
             let isPast = false;
 
             if (esHoy) {
-                const nowMin = hoy.getHours() * 60 + hoy.getMinutes();
-                const cruzaMedianoche = window.rangoFin < window.rangoInicio;
 
-                let slotRef = slotMin;
-                let nowRef = nowMin;
+    const nowMin = hoy.getHours() * 60 + hoy.getMinutes();
 
-                if (cruzaMedianoche && (slotMin / 60) <= window.rangoFin) {
-                    slotRef += 1440; // slot pertenece al “día siguiente”
-                }
+    const horariosMin = window.horariosDisponibles.map(h => {
+        const [hh, mm] = h.hora.split(':').map(Number);
+        return hh * 60 + mm;
+    });
 
-                if (cruzaMedianoche && hoy.getHours() <= window.rangoFin) {
-                    nowRef += 1440; // hora actual también pertenece al día siguiente
-                }
+    // Detectar cruce de medianoche
+    let cruzaMedianoche = false;
 
-                if (slotRef < nowRef) {
-                    isPast = true;
-                }
+    for (let i = 1; i < horariosMin.length; i++) {
+        if (horariosMin[i] < horariosMin[i - 1]) {
+            cruzaMedianoche = true;
+            break;
+        }
+    }
 
-                const currentHourStart = hoy.getHours() * 60;
-                const isCurrentHour = slotMin === currentHourStart;
+    let slotRef = slotMin;
+    let nowRef = nowMin;
 
-                if (isCurrentHour) {
-                    const minutosTranscurridos = nowMin - currentHourStart;
-                    const minutosRestantes = 60 - minutosTranscurridos;
+    if (cruzaMedianoche) {
 
-                    if (minutosRestantes < 30) {
-                        isPast = true;
-                    } else {
-                        bloqueable = !ocupado;
-                    }
-                } else if (isPast) {
-                    bloqueable = false;
-                }
-            }
+        const primerHorario = horariosMin[0];
+
+        // Si el horario pertenece al día siguiente lógico
+        if (slotMin < primerHorario) {
+            slotRef += 1440;
+        }
+
+        // Si la hora actual está después de medianoche
+        if (nowMin < primerHorario) {
+            nowRef += 1440;
+        }
+    }
+
+    if (slotRef < nowRef) {
+        isPast = true;
+        bloqueable = false;
+    }
+}
 
             // ---- FECHA PASADA ----
             if (esFechaPasada) {
@@ -533,63 +540,86 @@ document.addEventListener("DOMContentLoaded", () => {
 const container = document.getElementById('horariosContainer');
 const btnSubmit = document.getElementById('btnSubmit');
 const titulo = document.getElementById('seleccionhora');
+const contenedor = document.getElementById('contenedorHorarios');
 
+const observer = new MutationObserver(() => {
 
-// Verificar que existan horarios
+    const horas = document.querySelectorAll('#contenedorHorarios .hora-box');
+
+    if (!horas.length) return;
+
+    const todasOcupadas = Array.from(horas).every(h =>
+        h.classList.contains('hora-ocupada')
+    );
+
+    if (todasOcupadas) {
+        mostrarSinHorarios();
+    }
+
+});
+
+observer.observe(contenedor, { childList: true, subtree: true });
+
 if (!window.horariosDisponibles || !window.horariosDisponibles.length) {
+    mostrarSinHorarios();
+    return;
+}
+
+const fechaInput = document.getElementById('fecha').value;
+
+const hoy = new Date();
+
+const year = hoy.getFullYear();
+const month = String(hoy.getMonth() + 1).padStart(2, '0');
+const day = String(hoy.getDate()).padStart(2, '0');
+
+const hoyString = `${year}-${month}-${day}`;
+
+let horariosValidos = window.horariosDisponibles.filter(h => {
+
+    const [hora, minuto] = h.hora.split(':').map(Number);
+
+    // Si es hoy → filtrar horas pasadas
+    if (fechaInput === hoyString) {
+
+        const ahoraMin = hoy.getHours() * 60 + hoy.getMinutes();
+        const horaMin = hora * 60 + minuto;
+
+        if (horaMin <= ahoraMin) {
+            return false;
+        }
+    }
+
+    // Filtrar ocupadas
+    if (window.horariosOcupados && window.horariosOcupados.includes(h.hora)) {
+        return false;
+    }
+
+    return true;
+});
+
+if (!horariosValidos.length) {
+    mostrarSinHorarios();
+    return;
+}
+
+function mostrarSinHorarios() {
+
+    const container = document.getElementById('horariosContainer');
+    const btnSubmit = document.getElementById('btnSubmit');
+    const titulo = document.getElementById('seleccionhora');
+    const contenedorHorarios = document.getElementById('contenedorHorarios');
+
     container.innerHTML = `
         <div class="alert alert-warning text-center shadow-sm">
             No hay horarios disponibles
         </div>
     `;
+
     btnSubmit.style.display = 'none';
     titulo.style.display = 'none';
     contenedorHorarios.style.display = 'none';
-
-    return;
 }
-
-// Fecha seleccionada (string yyyy-mm-dd)
-const fechaInput = document.getElementById('fecha').value;
-
-// Fecha de hoy en formato yyyy-mm-dd
-const hoy = new Date();
-const hoyString = hoy.toISOString().split('T')[0];
-
-// Solo filtrar si es hoy
-let horariosValidos = window.horariosDisponibles;
-
-if (fechaInput === hoyString) {
-
-    const horaActual = hoy.getHours();
-    const minutoActual = hoy.getMinutes();
-
-    horariosValidos = window.horariosDisponibles.filter(h => {
-
-        const [hora, minuto] = h.hora.split(':').map(Number);
-
-        if (hora > horaActual) return true;
-        if (hora === horaActual && minuto > minutoActual) return true;
-
-        return false;
-    });
-}
-
-// Si no quedan horarios válidos
-if (!horariosValidos.length) {
-    container.innerHTML = `
-        <div class="alert alert-warning text-center shadow-sm">
-            No hay horarios disponibles
-        </div>
-    `;
-btnSubmit.style.display = 'none';
-titulo.style.display = 'none';
-contenedorHorarios.style.display = 'none';
-
-    return;
-}
-
-
 
 // Renderizar horarios
 let html = '';
@@ -602,7 +632,7 @@ horariosValidos.forEach(h => {
     `;
 });
 
-container.innerHTML = html;
+//container.innerHTML = html;
 });
 </script>
 

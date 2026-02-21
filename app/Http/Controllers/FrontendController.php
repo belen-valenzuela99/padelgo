@@ -203,6 +203,7 @@ public function prepararReservacion(Request $request)
         ->where('activo', true)
         ->orderBy('hora_inicio')
         ->get();
+        
 
     if ($tipos->isEmpty()) {
         return back()->with('error', 'La cancha no tiene tipos de reservación configurados.');
@@ -213,14 +214,31 @@ public function prepararReservacion(Request $request)
     $carbonHoraInicio = Carbon::createFromFormat('H:i:s', $horaInicio);
 
     foreach ($tipos as $tipo) {
-        $inicioTipo = Carbon::parse($tipo->hora_inicio);
-        $finTipo    = Carbon::parse($tipo->hora_fin);
+
+    $inicioTipo = Carbon::createFromFormat('H:i:s', $tipo->hora_inicio);
+    $finTipo    = Carbon::createFromFormat('H:i:s', $tipo->hora_fin);
+
+    // Caso normal (no cruza medianoche)
+    if ($inicioTipo->lt($finTipo)) {
 
         if ($carbonHoraInicio->gte($inicioTipo) && $carbonHoraInicio->lt($finTipo)) {
             $tipoSeleccionado = $tipo;
             break;
         }
+
+    } 
+    // Caso que cruza medianoche (ej: 17:00 → 02:00)
+    else {
+
+        if (
+            $carbonHoraInicio->gte($inicioTipo) ||
+            $carbonHoraInicio->lt($finTipo)
+        ) {
+            $tipoSeleccionado = $tipo;
+            break;
+        }
     }
+}
 
     // --- Manejo de horas fuera de los tipos definidos ---
     if (!$tipoSeleccionado) {
