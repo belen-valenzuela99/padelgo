@@ -201,56 +201,104 @@ public function confirmar(Request $request)
 
     return $this->crearAbonoConReservas($request, $resultado['disponibles']);
 }
-private function crearAbonoConReservas($request, $fechas)
+    private function crearAbonoConReservas($request, $fechas)
 {
-    // 🔹 Calcular duración real en horas
-    $duracion = Carbon::parse($request->hora_inicio)
-        ->diffInHours(Carbon::parse($request->hora_fin));
+    // Calcular duración real soportando cruce de medianoche
+    $inicio = Carbon::parse($request->hora_inicio);
+    $fin    = Carbon::parse($request->hora_fin);
 
-    // 🔹 Obtener tipo activo de la cancha
-    $tipo = TipoReservacion::where('cancha_id', $request->cancha_id)
+
+    if ($request->hora_fin <= $request->hora_inicio) {
+        $fin->addDay();
+    }
+
+
+    $duracion = $inicio->diffInHours($fin);
+
+
+    $horaCarbon = Carbon::parse($request->hora_inicio);
+
+
+    $tipos = TipoReservacion::where('cancha_id', $request->cancha_id)
         ->where('activo', true)
-        ->first();
+        ->orderBy('hora_inicio')
+        ->get();
 
-    if (!$tipo) {
+
+    if ($tipos->isEmpty()) {
         return back()->with('error', 'No hay tipo de reservación activo para esta cancha.');
     }
 
-    // 🔹 Precio por día
-    $precioPorDia = $tipo->precio * $duracion;
 
-    // 🔹 Total mensual del abono
-    $totalAbono = $precioPorDia * count($fechas);
+    $tipoSeleccionado = null;
 
-    // 🔹 Crear abono (guarda total mensual)
+
+    foreach ($tipos as $tipo) {
+
+
+        $inicioTipo = Carbon::parse($tipo->hora_inicio);
+        $finTipo    = Carbon::parse($tipo->hora_fin);
+
+
+        if ($inicioTipo->lt($finTipo)) {
+
+
+            if ($horaCarbon->gte($inicioTipo) && $horaCarbon->lt($finTipo)) {
+                $tipoSeleccionado = $tipo;
+                break;
+            }
+
+
+        } else {
+
+
+            if ($horaCarbon->gte($inicioTipo) || $horaCarbon->lt($finTipo)) {
+                $tipoSeleccionado = $tipo;
+                break;
+            }
+        }
+    }
+
+
+    if (!$tipoSeleccionado) {
+        $tipoSeleccionado = $tipos->first();
+    }
+
+
+    $precioPorDia = $tipoSeleccionado->precio * $duracion;
+    $totalAbono   = $precioPorDia * count($fechas);
+
+
     $abono = Abono::create([
-        'user_id' => $request->user_id,
-        'cancha_id' => $request->cancha_id,
-        'dia_semana' => $request->dia_semana,
-        'mes' => $request->mes,
+        'user_id'     => $request->user_id,
+        'cancha_id'   => $request->cancha_id,
+        'dia_semana'  => $request->dia_semana,
+        'mes'         => $request->mes,
         'hora_inicio' => $request->hora_inicio,
-        'hora_fin' => $request->hora_fin,
-        'precio' => $totalAbono, // 🔥 total mensual correcto
-        'activo' => true,
+        'hora_fin'    => $request->hora_fin,
+        'precio'      => $totalAbono,
+        'activo'      => true,
     ]);
 
-    // 🔹 Crear reservaciones individuales (precio por día)
+
     foreach ($fechas as $fecha) {
         Reservacion::create([
-            'user_id' => $request->user_id,
-            'cancha_id' => $request->cancha_id,
+            'user_id'          => $request->user_id,
+            'cancha_id'        => $request->cancha_id,
             'reservacion_date' => $fecha,
-            'hora_inicio' => $request->hora_inicio,
-            'hora_final' => $request->hora_fin,
-            'precio' => $precioPorDia, // 🔥 precio individual
-            'status' => 'programado',
-            'abono_id' => $abono->id,
+            'hora_inicio'      => $request->hora_inicio,
+            'hora_final'       => $request->hora_fin,
+            'precio'           => $precioPorDia,
+            'status'           => 'programado',
+            'abono_id'         => $abono->id,
         ]);
     }
+
 
     return redirect()->route('abonos.index')
         ->with('success', 'Abono creado con fechas disponibles.');
 }
+
 
 
 
