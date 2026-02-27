@@ -179,29 +179,62 @@ public function create()
     public function prepararReservacionAdmin(Request $request)
 {
     $request->validate([
-        'fecha' => 'required|date',
-        'hora' => 'required',
-        'cancha_id' => 'required|exists:canchas,id',
-        'duracion' => 'required|integer|min:1',
-        'usuario' => 'required|exists:users,id',
+        'fecha'      => 'required|date',
+        'hora'       => 'required',
+        'cancha_id'  => 'required|exists:canchas,id',
+        'duracion'   => 'required|integer|min:1',
+        'usuario'    => 'required|exists:users,id',
     ]);
 
     $fechaReserva = Carbon::parse($request->fecha)->format('Y-m-d');
     $horaInicio   = Carbon::parse($request->hora)->format('H:i:s');
     $duracion     = (int) $request->duracion;
 
-    $horaFinal = Carbon::parse($horaInicio)
-        ->addHours($duracion)
-        ->format('H:i:s');
+    /*
+    |----Construir datetime reales (maneja cruce de medianoche correctamente)---
+    | 
+    */
+
+    $inicioReserva = Carbon::parse($fechaReserva . ' ' . $horaInicio);
+    $finReserva    = $inicioReserva->copy()->addHours($duracion);
+
+    /*
+    |-----------------------VALIDAR SOLAPAMIENTO REAL-----------------------*/
+
+    $conflicto = Reservacion::where('cancha_id', $request->cancha_id)
+        ->whereIn('status', ['programado', 'turno completado'])
+        ->get()
+        ->contains(function ($reserva) use ($inicioReserva, $finReserva) {
+
+            $inicioExistente = Carbon::parse(
+                $reserva->reservacion_date . ' ' . $reserva->hora_inicio
+            );
+
+            $finExistente = Carbon::parse(
+                $reserva->reservacion_date . ' ' . $reserva->hora_fin
+            );
+
+            // Si la hora_fin es menor que hora_inicio, cruza medianoche
+            if ($finExistente->lte($inicioExistente)) {
+                $finExistente->addDay();
+            }
+
+            return $inicioReserva->lt($finExistente) &&
+                   $finReserva->gt($inicioExistente);
+        });
+
+    if ($conflicto) {
+        return back()->withErrors([
+            'hora' => 'El horario seleccionado interfiere con otra reservación existente.'
+        ])->withInput();
+    }
+
+    /*
+    |-----------------------Buscar tipo correcto por horario------------------------*/
 
     $cancha  = Canchas::with('club')->findOrFail($request->cancha_id);
     $usuario = User::findOrFail($request->usuario);
 
-    /*
-    |---------------------------------------
-    | Buscar tipo correcto por horario
-    |---------------------------------------
-    */
     $tipos = TipoReservacion::where('cancha_id', $cancha->id)
         ->where('activo', true)
         ->orderBy('hora_inicio')
@@ -212,55 +245,50 @@ public function create()
 
     foreach ($tipos as $tipo) {
 
-    $inicioTipo = Carbon::createFromFormat('H:i:s', $tipo->hora_inicio);
-    $finTipo    = Carbon::createFromFormat('H:i:s', $tipo->hora_fin);
+        $inicioTipo = Carbon::createFromFormat('H:i:s', $tipo->hora_inicio);
+        $finTipo    = Carbon::createFromFormat('H:i:s', $tipo->hora_fin);
 
-    // Caso normal (no cruza medianoche)
-    if ($inicioTipo->lt($finTipo)) {
+        // Caso normal
+        if ($inicioTipo->lt($finTipo)) {
 
-        if ($horaCarbon->gte($inicioTipo) && $horaCarbon->lt($finTipo)) {
-            $tipoSeleccionado = $tipo;
-            break;
+            if ($horaCarbon->gte($inicioTipo) && $horaCarbon->lt($finTipo)) {
+                $tipoSeleccionado = $tipo;
+                break;
+            }
+
         }
+        // Caso cruza medianoche
+        else {
 
-    } 
-    // Caso cruza medianoche
-    else {
-
-        if (
-            $horaCarbon->gte($inicioTipo) ||
-            $horaCarbon->lt($finTipo)
-        ) {
-            $tipoSeleccionado = $tipo;
-            break;
+            if (
+                $horaCarbon->gte($inicioTipo) ||
+                $horaCarbon->lt($finTipo)
+            ) {
+                $tipoSeleccionado = $tipo;
+                break;
+            }
         }
     }
-}
 
-// --- Manejo de horas fuera de rango ---
-if (!$tipoSeleccionado) {
-
-    $primerTipo = $tipos->first();
-    $ultimoTipo = $tipos->last();
-
-    if ($horaCarbon->lt(Carbon::parse($primerTipo->hora_inicio))) {
-        $tipoSeleccionado = $primerTipo;
-
-    } elseif ($horaCarbon->gte(Carbon::parse($ultimoTipo->hora_fin))) {
-        $tipoSeleccionado = $ultimoTipo;
-
-    } else {
-        $tipoSeleccionado = $primerTipo;
+    // Si no hay tipo válido, bloquear en vez de forzar uno
+    if (!$tipoSeleccionado) {
+        return back()->withErrors([
+            'hora' => 'El horario seleccionado no está disponible para esta cancha.'
+        ])->withInput();
     }
-}
+
+    /*
+    |--------------------------------------------------------------------------
+    | Calcular precio
+    |--------------------------------------------------------------------------
+    */
 
     $precioTotal = $tipoSeleccionado->precio * $duracion;
 
-    // Objeto tipo preReserva
     $preReserva = (object)[
         'fecha'               => $fechaReserva,
         'hora_inicio'         => $horaInicio,
-        'hora_final'          => $horaFinal,
+        'hora_final'          => $finReserva->format('H:i:s'),
         'duracion'            => $duracion,
         'precio_por_hora'     => $tipoSeleccionado->precio,
         'total'               => $precioTotal,

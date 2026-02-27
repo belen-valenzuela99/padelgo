@@ -166,7 +166,7 @@
         </div>
 
         <div class="mt-3">
-            <button class="btn btn-primary">Guardar Abono</button>
+            <button class="btn btn-primary" id="btnGuardarAbono">Guardar Abono</button>
             <a href="{{ route('abonos.index') }}" class="btn btn-secondary">Cancelar</a>
         </div>
     </form>
@@ -235,14 +235,31 @@ function generarCalendario() {
     }
 
     // 🔹 Días reales
+    const hoy = new Date();
+    hoy.setHours(0,0,0,0);
+
     for (let d = 1; d <= totalDias; d++) {
 
         const fecha = new Date(year, mes, d);
+        fecha.setHours(0,0,0,0);
+
         const div = document.createElement('div');
 
-        if (fecha.getDay() === diaObjetivo) {
+        const esMesActual = (mes === hoy.getMonth());
+        const esDiaPasado = fecha < hoy;
+
+        // Si es mes actual y el día ya pasó, no lo activamos
+        if (
+            fecha.getDay() === diaObjetivo &&
+            (!esMesActual || !esDiaPasado)
+        ) {
             div.classList.add('dia-activo');
             fechas.push(d);
+        }
+
+        // Opcional: marcar visualmente días pasados en gris
+        if (esMesActual && esDiaPasado) {
+            div.style.opacity = "0.3";
         }
 
         div.innerText = d;
@@ -250,7 +267,32 @@ function generarCalendario() {
     }
 
     cantidadFechas = fechas.length;
+    const boton = document.getElementById('btnGuardarAbono');
 
+    if (cantidadFechas === 0) {
+
+        boton.disabled = true;
+        boton.classList.add('btn-secondary');
+        boton.classList.remove('btn-primary');
+        horaInicioSelect.disabled = true;
+        duracionSelect.disabled = true;
+        resumen.innerHTML = `
+            <span class="text-danger">
+                No quedan fechas disponibles en este mes para ese día.
+            </span>
+        `;
+
+        // Resetear precio
+        precioInput.value = 0;
+        document.getElementById("precioVisual").innerText = "$ 0";
+
+    } else {
+        horaInicioSelect.disabled = false;
+        duracionSelect.disabled = false;
+        boton.disabled = false;
+        boton.classList.add('btn-primary');
+        boton.classList.remove('btn-secondary');
+    }
     resumen.innerHTML = `
         Día: <b>${diaSelect.value}</b><br>
         Mes: <b>${mesSelect.options[mesSelect.selectedIndex].text}</b><br>

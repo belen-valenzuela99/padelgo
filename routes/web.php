@@ -102,7 +102,11 @@ Route::middleware(['auth', 'role:gestor'])->prefix('gestor')->group(function () 
     Route::post('/reportes/generar', [ReportesController::class, 'generar'])->middleware(['auth'])->name('reportes.generar');
     Route::post('/reservaciones/preparar',[ReservacionController::class, 'prepararReservacionAdmin'])->name('admin.reservacions.preparar');
     Route::post('/reservaciones/store-final',[ReservacionController::class, 'storeFinal'])->name('admin.reservacions.storeFinal');
+    Route::patch('/abonos/{id}/activar', [AbonoController::class, 'activar'])
+    ->name('abonos.activar');
 
+    Route::patch('/abonos/{id}/desactivar', [AbonoController::class, 'desactivar'])
+    ->name('abonos.desactivar');
 
 
 

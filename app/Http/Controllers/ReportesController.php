@@ -237,13 +237,20 @@ public function generar(Request $request)
     $fechaInicio = $request->fecha_inicio;
     $fechaFin    = $request->fecha_fin;
 
-    $userId = auth()->id(); // 🔥 gestor logueado
+    $userId = auth()->id(); // gestor logueado
 
     // Obtener meses seleccionados (1–12) desde las fechas
-    $mesesSeleccionados = collect(
-        \Carbon\Carbon::parse($fechaInicio)
-            ->monthsUntil(\Carbon\Carbon::parse($fechaFin))
-    )->map(fn($d) => $d->month)->unique()->values();
+    $inicio = \Carbon\Carbon::parse($fechaInicio)->startOfMonth();
+    $fin    = \Carbon\Carbon::parse($fechaFin)->startOfMonth();
+
+    $mesesSeleccionados = collect();
+
+    while ($inicio <= $fin) {
+        $mesesSeleccionados->push($inicio->month);
+        $inicio->addMonth();
+    }
+
+    $mesesSeleccionados = $mesesSeleccionados->unique()->values();
 
     $data = [];
 
@@ -350,8 +357,11 @@ public function generar(Request $request)
 
             ->leftJoin('abonos', function ($join) use ($mesesSeleccionados) {
                 $join->on('canchas.id', '=', 'abonos.cancha_id')
-                     ->where('abonos.activo', true)
-                     ->whereIn('abonos.mes', $mesesSeleccionados); // 🔥 AHORA USA abonos.mes
+                     ->where('abonos.activo', 1);
+            
+                if ($mesesSeleccionados->isNotEmpty()) {
+                    $join->whereIn('abonos.mes', $mesesSeleccionados);
+                }
             })
 
             ->selectRaw('

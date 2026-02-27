@@ -21,8 +21,6 @@
     <div class="d-flex justify-content-center gap-3 flex-wrap mb-5">
 
         <span class="badge-club">🏟 {{ count($canchas) }} Canchas disponibles</span>
-
-        <span class="badge-club">⏰ Abierto hoy: 08:00 - 23:00</span>
         
 
         <span class="badge-club">⭐ Reservas rápidas</span>

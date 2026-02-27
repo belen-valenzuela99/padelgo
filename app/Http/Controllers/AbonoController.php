@@ -137,7 +137,13 @@ private function analizarFechasAbono(Request $request)
         'domingo' => 0,
     ];
 
-    $anio = now()->year;
+    $mesActual  = now()->month;
+    $anioActual = now()->year;
+
+    $anio = $request->mes < $mesActual
+        ? $anioActual + 1
+        : $anioActual;
+
     $fecha = Carbon::create($anio, $request->mes, 1)->startOfMonth();
 
     while ($fecha->dayOfWeek !== $dias[$request->dia_semana]) {
@@ -148,6 +154,14 @@ private function analizarFechasAbono(Request $request)
     $noDisponibles = [];
 
    while ($fecha->month == $request->mes) {
+    //  Ignorar fechas pasadas si es el mes actual
+    if (
+        $request->mes == now()->month &&
+        $fecha->lt(now()->startOfDay())
+    ) {
+        $fecha->addWeek();
+        continue;
+    }
 
     $inicioAbono = Carbon::parse($fecha->toDateString() . ' ' . $request->hora_inicio);
     $finAbono    = Carbon::parse($fecha->toDateString() . ' ' . $request->hora_fin);
@@ -435,5 +449,23 @@ public function storeFinal(Request $request)
     }
 
     return $this->crearAbonoConReservas($request, $resultado['disponibles']);
+}
+
+public function activar($id)
+{
+    $abono = Abono::findOrFail($id);
+    $abono->activo = true;
+    $abono->save();
+
+    return back()->with('success', 'El abono fue activado con exito.');
+}
+
+public function desactivar($id)
+{
+    $abono = Abono::findOrFail($id);
+    $abono->activo = false;
+    $abono->save();
+
+    return back()->with('success', 'El abono fue desactivado con exito.');
 }
 }

@@ -60,7 +60,15 @@
                             <option value="Domingo">Domingo</option>
                         </select>
                     </div>
-
+                    <div class="col-md-3">
+                        <label class="form-label">Estado</label>
+                        <select id="activeFiltro" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="1">Activo</option>
+                            <option value="0">Inactivo</option>
+                            
+                        </select>
+                    </div>
 
                     <div class="col-md-3">
                         <button type="button" id="limpiarFiltros"
@@ -83,6 +91,7 @@
                         <th>Mes</th>
                         <th>Horario</th>
                         <th>Precio</th>
+                        <th>Estado</th>
                         <th class="text-end pe-4">Acciones</th>
                     </tr>
                 </thead>
@@ -93,6 +102,7 @@
                             <tr 
                 data-mes="{{ $abono->mes }}"
                 data-dia="{{ $abono->dia_semana }}"
+                data-activo="{{ $abono->activo }}"
             >
 
                             <td class="fw-semibold text-muted">
@@ -125,12 +135,40 @@
                                 ${{ $abono->precio }}
                             </td>
 
-                            <td class="text-end pe-4">
-                                <a href="{{ route('abonos.edit', $abono->id) }}"
-                                   class="btn btn-sm btn-outline-warning me-2">
-                                    Editar
-                                </a>
+                            <td class="">
+                                @if($abono->activo)
+                                    <span class="badge bg-success-subtle text-success px-3 py-2">
+                                        Activo
+                                    </span>
+                                @else
+                                    <span class="badge bg-danger-subtle text-danger px-3 py-2">
+                                        Inactivo
+                                    </span>
+                                @endif
+                            </td>
 
+                            <td class="text-end pe-4">
+                                
+                                {{-- Botón Publicar / Despublicar --}}
+                                @if($abono->activo)
+                                    <form action="{{ route('abonos.desactivar', $abono->id) }}" 
+                                        method="POST" class="d-inline">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn btn-sm btn-secondary">
+                                            Desactivar
+                                        </button>
+                                    </form>
+                                @else
+                                    <form action="{{ route('abonos.activar', $abono->id) }}" 
+                                        method="POST" class="d-inline">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn btn-sm btn-success">
+                                            Activar
+                                        </button>
+                                    </form>
+                                @endif
                                 <form action="{{ route('abonos.destroy', $abono->id) }}"
                                       method="POST"
                                       class="d-inline"
@@ -166,6 +204,7 @@
 const mesFiltro  = document.getElementById('mesFiltro');
 const diaFiltro  = document.getElementById('diaFiltro');
 const filas = document.querySelectorAll('tbody tr[data-mes]');
+const activeFiltro = document.getElementById("activeFiltro");
 
 function normalizar(texto) {
     return texto
@@ -177,15 +216,18 @@ function normalizar(texto) {
 
 function filtrarTabla() {
     const mes  = mesFiltro.value;
+    const active  = activeFiltro.value;
     const dia  = normalizar(diaFiltro.value);
 
     filas.forEach(fila => {
         const mesFila = fila.dataset.mes;
+        const activeFila = fila.dataset.activo;
         const diaFila = normalizar(fila.dataset.dia);
 
         let visible = true;
 
         if (mes && mesFila !== mes) visible = false;
+        if (active && activeFila !== active) visible = false;
         if (dia && diaFila !== dia) visible = false;
 
         fila.style.display = visible ? '' : 'none';
@@ -193,11 +235,13 @@ function filtrarTabla() {
 }
 
 mesFiltro.addEventListener('change', filtrarTabla);
+activeFiltro.addEventListener('change', filtrarTabla);
 diaFiltro.addEventListener('change', filtrarTabla);
 
 document.getElementById('limpiarFiltros').addEventListener('click', () => {
     mesFiltro.value = '';
     diaFiltro.value = '';
+    activeFiltro.value = '';
     filtrarTabla();
 });
 </script>
