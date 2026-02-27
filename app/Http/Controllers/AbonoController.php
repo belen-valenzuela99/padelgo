@@ -280,7 +280,6 @@ public function confirmar(Request $request)
         'activo'      => true,
     ]);
 
-
     foreach ($fechas as $fecha) {
         Reservacion::create([
             'user_id'          => $request->user_id,
@@ -294,9 +293,11 @@ public function confirmar(Request $request)
         ]);
     }
 
+    // Cargar relaciones para la vista
+    $abono->load('usuario', 'cancha.club');
 
-    return redirect()->route('abonos.index')
-        ->with('success', 'Abono creado con fechas disponibles.');
+    return view('admin.abonos.ticketAbono', compact('abono'))
+        ->with('success', 'Abono creado correctamente.');
 }
 
 
@@ -392,7 +393,7 @@ $conflicto = Reservacion::where('cancha_id', $abono->cancha_id)
         'precio'       => 'required|numeric|min:0',
     ]);
 
-    // 🔎 Analizar disponibilidad
+    //  Analizar disponibilidad
     $resultado = $this->analizarFechasAbono($request);
 
     if (count($resultado['no_disponibles']) > 0) {

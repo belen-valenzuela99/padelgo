@@ -227,7 +227,7 @@ public function index()
         return view('gestor.reportes', compact('clubs', 'canchas'));
     }
 
- public function generar(Request $request)
+public function generar(Request $request) 
 {
     $tipos = $request->input('tipos', []);
 
@@ -236,6 +236,14 @@ public function index()
 
     $fechaInicio = $request->fecha_inicio;
     $fechaFin    = $request->fecha_fin;
+
+    $userId = auth()->id(); // 🔥 gestor logueado
+
+    // Obtener meses seleccionados (1–12) desde las fechas
+    $mesesSeleccionados = collect(
+        \Carbon\Carbon::parse($fechaInicio)
+            ->monthsUntil(\Carbon\Carbon::parse($fechaFin))
+    )->map(fn($d) => $d->month)->unique()->values();
 
     $data = [];
 
@@ -249,6 +257,7 @@ public function index()
         $ingresos = Canchas::query()
 
             ->join('clubs', 'canchas.id_club', '=', 'clubs.id')
+            ->where('clubs.id_user', $userId) // 🔒 SOLO clubes del gestor
 
             ->when($clubId !== 'all', fn($q) =>
                 $q->where('canchas.id_club', $clubId)
@@ -289,6 +298,7 @@ public function index()
         $reservas = Canchas::query()
 
             ->join('clubs', 'canchas.id_club', '=', 'clubs.id')
+            ->where('clubs.id_user', $userId) // 🔒 SOLO clubes del gestor
 
             ->when($clubId !== 'all', fn($q) =>
                 $q->where('canchas.id_club', $clubId)
@@ -320,7 +330,7 @@ public function index()
 
     /*
     |--------------------------------------------------------------------------
-    | ABONOS
+    | ABONOS (🔥 FILTRADO POR abonos.mes + activos + gestor)
     |--------------------------------------------------------------------------
     */
     if (in_array('abonos', $tipos)) {
@@ -328,6 +338,7 @@ public function index()
         $abonos = Canchas::query()
 
             ->join('clubs', 'canchas.id_club', '=', 'clubs.id')
+            ->where('clubs.id_user', $userId) // 🔒 SOLO clubes del gestor
 
             ->when($clubId !== 'all', fn($q) =>
                 $q->where('canchas.id_club', $clubId)
@@ -337,10 +348,10 @@ public function index()
                 $q->where('canchas.id', $canchaId)
             )
 
-            ->leftJoin('abonos', function ($join) use ($fechaInicio, $fechaFin) {
+            ->leftJoin('abonos', function ($join) use ($mesesSeleccionados) {
                 $join->on('canchas.id', '=', 'abonos.cancha_id')
                      ->where('abonos.activo', true)
-                     ->whereBetween('abonos.created_at', [$fechaInicio, $fechaFin]);
+                     ->whereIn('abonos.mes', $mesesSeleccionados); // 🔥 AHORA USA abonos.mes
             })
 
             ->selectRaw('
@@ -360,6 +371,5 @@ public function index()
 
     return view('gestor.resultados', compact('data'));
 }
-
 
 }

@@ -21,11 +21,17 @@
         <div class="mb-3">
             <label for="cancha_id" class="form-label">Cancha</label>
             <select name="cancha_id" id="cancha_id" class="form-control" required>
-                <option value="">Seleccione una cancha</option>
-                @foreach ($canchas as $cancha)
-                    <option value="{{ $cancha->id }}">{{ $cancha->nombre }}</option>
-                @endforeach
-            </select>
+    <option value="">Seleccione una cancha</option>
+    @foreach ($canchas as $cancha)
+        <option 
+            value="{{ $cancha->id }}"
+            data-tipos='@json($cancha->tiposReservacion)'
+            data-duracion="{{ $cancha->duracion_maxima ?? 1 }}"
+        >
+            {{ $cancha->nombre }}
+        </option>
+    @endforeach
+</select>
         </div>
 
         <div class="mb-3">
@@ -71,24 +77,28 @@ document.addEventListener("DOMContentLoaded", () => {
     const horaSelect     = document.getElementById("hora");
     const duracionSelect = document.getElementById("duracion");
 
+    let tipos = [];
+    let duracionMaxima = 1;
     let ocupadas = [];
 
-    canchaSelect.addEventListener("change", onCanchaOrFechaChange);
-    fechaInput.addEventListener("change", onCanchaOrFechaChange);
+    canchaSelect.addEventListener("change", cargarTodo);
+    fechaInput.addEventListener("change", cargarTodo);
     horaSelect.addEventListener("change", actualizarDuracionesDisponibles);
-    //duracionSelect.addEventListener("change", construirSelectHoras);
 
-    async function onCanchaOrFechaChange() {
+    async function cargarTodo() {
         resetSelects();
 
         const canchaId = canchaSelect.value;
         const fecha = fechaInput.value;
-
         if (!canchaId || !fecha) return;
 
+        const selected = canchaSelect.selectedOptions[0];
+        tipos = JSON.parse(selected.dataset.tipos || "[]");
+        duracionMaxima = parseInt(selected.dataset.duracion || 1);
+
         await cargarHorasOcupadas(canchaId, fecha);
-        await cargarDuracionMaxima(canchaId);
-        construirSelectHoras();
+        construirHoras();
+        construirDuraciones();
     }
 
     function resetSelects() {
@@ -100,99 +110,154 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const resp = await fetch(`/horas-ocupadas/${canchaId}/${fecha}`);
             ocupadas = await resp.json();
-        } catch (err) {
-            console.error("Error horas ocupadas:", err);
+        } catch (e) {
             ocupadas = [];
         }
     }
 
-    async function cargarDuracionMaxima(canchaId) {
-        try {
-            const resp = await fetch(`/api/cancha/${canchaId}`);
-            const data = await resp.json();
-
-            duracionSelect.innerHTML = '<option value="">Seleccione duración</option>';
-
-            for (let i = 1; i <= data.duracion_maxima; i++) {
-                const opt = document.createElement("option");
-                opt.value = i;
-                opt.dataset.duracion = i;
-                opt.textContent = i + " hora(s)";
-                duracionSelect.appendChild(opt);
-            }
-
-        } catch (err) {
-            console.error("Error duración máxima:", err);
-        }
-    }
-
-    function construirSelectHoras() {
-        const dur = getDuracionSeleccionadaHoras() || 1;
-
-        const horas = generarHoras(8, 23);
+    function construirHoras() {
         horaSelect.innerHTML = '<option value="">Seleccione una hora</option>';
 
-        horas.forEach(hora => {
-            const horaInicio = hora + ":00";
-            const horaFinal = sumarHoras(hora, dur);
+        const ahora = new Date();
+        const hoyStr =
+            ahora.getFullYear() + '-' +
+            String(ahora.getMonth() + 1).padStart(2, '0') + '-' +
+            String(ahora.getDate()).padStart(2, '0');
 
-            const ocupada = ocupadas.some(res =>
-                !(horaFinal <= res.hora_inicio || horaInicio >= res.hora_final)
-            );
+        const esHoy = fechaInput.value === hoyStr;
+        const ahoraMin = ahora.getHours() * 60 + ahora.getMinutes();
 
-            const opt = document.createElement("option");
-            opt.value = hora;
-            opt.textContent = hora + (ocupada ? " (ocupada)" : "");
+        tipos.forEach(tipo => {
 
-            if (ocupada) {
-                opt.disabled = true;
+            let ini = convertirAMinutos(tipo.hora_inicio);
+            let fin = convertirAMinutos(tipo.hora_fin);
+
+            const cruzaMedianoche = fin <= ini;
+            if (cruzaMedianoche) fin += 1440;
+
+            for (let m = ini; m < fin; m += 60) {
+
+                let minutosOpcion = m;
+                let esDiaSiguiente = false;
+
+                if (cruzaMedianoche && m >= 1440) {
+                    minutosOpcion = m - 1440;
+                    esDiaSiguiente = true;
+                }
+
+                const hora = minutosAHora(minutosOpcion);
+
+                let horaPasada = false;
+                if (esHoy && !esDiaSiguiente) {
+                    if (convertirAMinutos(hora) <= ahoraMin) {
+                        horaPasada = true;
+                    }
+                }
+
+                const horaFinalMin = sumarHoras(hora, 1);
+
+                const ocupada = ocupadas.some(res =>
+                    !(horaFinalMin <= res.hora_inicio || hora >= res.hora_final)
+                );
+
+                const opt = document.createElement("option");
+                opt.value = hora.slice(0,5);
+                opt.textContent = hora.slice(0,5);
+
+                if (horaPasada) opt.textContent += " (ya pasó)";
+                if (ocupada) opt.textContent += " (ocupada)";
+
+                if (horaPasada || ocupada) opt.disabled = true;
+
+                horaSelect.appendChild(opt);
             }
-
-            horaSelect.appendChild(opt);
         });
+    }
+
+    function construirDuraciones() {
+        duracionSelect.innerHTML = '<option value="">Seleccione duración</option>';
+        for (let i = 1; i <= duracionMaxima; i++) {
+            const opt = document.createElement("option");
+            opt.value = i;
+            opt.textContent = i + " hora(s)";
+            duracionSelect.appendChild(opt);
+        }
     }
 
     function actualizarDuracionesDisponibles() {
         const horaSel = horaSelect.value;
         if (!horaSel) return;
 
+        const horaInicio = horaSel + ":00";
+
+        let tipoActual = null;
+
+        tipos.forEach(tipo => {
+            let ini = convertirAMinutos(tipo.hora_inicio);
+            let fin = convertirAMinutos(tipo.hora_fin);
+
+            if (fin <= ini) fin += 1440;
+
+            let hSel = convertirAMinutos(horaInicio);
+            if (hSel < ini) hSel += 1440;
+
+            if (hSel >= ini && hSel < fin) {
+                tipoActual = { ini, fin };
+            }
+        });
+
         const opciones = Array.from(duracionSelect.options).slice(1);
 
         opciones.forEach(opt => {
-            const dur = parseInt(opt.dataset.duracion || "0", 10);
-            const horaInicio = horaSel + ":00";
-            const horaFinal = sumarHoras(horaSel, dur);
+            const dur = parseInt(opt.value, 10);
 
-            const solapa = ocupadas.some(res =>
-                !(horaFinal <= res.hora_inicio || horaInicio >= res.hora_final)
-            );
+            let hIni = convertirAMinutos(horaInicio);
+            let hFin = hIni + (dur * 60);
 
-            opt.disabled = solapa;
+            if (tipoActual && hIni < tipoActual.ini) {
+                hIni += 1440;
+                hFin += 1440;
+            }
 
-            if (solapa && duracionSelect.value === opt.value) {
+            const superaRango = tipoActual ? (hFin > tipoActual.fin) : true;
+
+            const solapa = ocupadas.some(res => {
+                let rIni = convertirAMinutos(res.hora_inicio);
+                let rFin = convertirAMinutos(res.hora_final);
+                if (rFin <= rIni) rFin += 1440;
+
+                let sIni = convertirAMinutos(horaInicio);
+                let sFin = convertirAMinutos(sumarHoras(horaInicio, dur));
+                if (sFin <= sIni) sFin += 1440;
+
+                return Math.max(sIni, rIni) < Math.min(sFin, rFin);
+            });
+
+            const invalida = superaRango || solapa;
+            opt.disabled = invalida;
+
+            if (invalida && duracionSelect.value === opt.value) {
                 duracionSelect.value = "";
             }
         });
     }
 
-    function getDuracionSeleccionadaHoras() {
-        const sel = duracionSelect.selectedOptions[0];
-        if (!sel) return null;
-        return parseInt(sel.dataset.duracion || "0", 10);
+    function convertirAMinutos(hora) {
+        const [h, m] = hora.split(':').map(Number);
+        return h * 60 + m;
     }
 
-    function generarHoras(inicio, fin) {
-        const arr = [];
-        for (let h = inicio; h <= fin; h++) {
-            arr.push(h.toString().padStart(2, "0") + ":00");
-        }
-        return arr;
+    function minutosAHora(minutos) {
+        minutos = minutos % 1440;
+        const h = Math.floor(minutos / 60).toString().padStart(2, '0');
+        const m = (minutos % 60).toString().padStart(2, '0');
+        return `${h}:${m}:00`;
     }
 
     function sumarHoras(hora, cantidad) {
         const [h, m] = hora.split(':').map(Number);
-        const nueva = new Date(0, 0, 0, h + cantidad, m);
-        return nueva.toTimeString().slice(0, 8);
+        const d = new Date(0, 0, 0, h + cantidad, m);
+        return d.toTimeString().slice(0, 8);
     }
 
 });

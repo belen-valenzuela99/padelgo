@@ -167,13 +167,21 @@ const mesFiltro  = document.getElementById('mesFiltro');
 const diaFiltro  = document.getElementById('diaFiltro');
 const filas = document.querySelectorAll('tbody tr[data-mes]');
 
+function normalizar(texto) {
+    return texto
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // quita tildes
+        .trim();
+}
+
 function filtrarTabla() {
     const mes  = mesFiltro.value;
-    const dia  = diaFiltro.value;
+    const dia  = normalizar(diaFiltro.value);
 
     filas.forEach(fila => {
         const mesFila = fila.dataset.mes;
-        const diaFila = fila.dataset.dia;
+        const diaFila = normalizar(fila.dataset.dia);
 
         let visible = true;
 

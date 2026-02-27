@@ -31,21 +31,23 @@ class ReservacionController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
-    {
-        $userId = auth()->id();
+public function create()
+{
+    $userId = auth()->id();
 
-        $canchas = Canchas::whereHas('club', function ($q) use ($userId) {
+    $canchas = Canchas::with(['tiposReservacion' => function($q) {
+            $q->where('activo', true)
+              ->orderBy('hora_inicio');
+        }])
+        ->whereHas('club', function ($q) use ($userId) {
             $q->where('id_user', $userId);
-        })->get();
+        })
+        ->get();
 
-        $tipos = TipoReservacion::orderBy('hora_inicio')->get();
+    $usuarios = \App\Models\User::where('role', 2)->get();
 
-        $usuarios = \App\Models\User::where('role', 2)->get();
-
-        return view('admin.reservacions.create', compact('canchas', 'tipos', 'usuarios'));
-    }
-
+    return view('admin.reservacions.create', compact('canchas', 'usuarios'));
+}
 
     /**
      * Store a newly created resource in storage.
@@ -273,7 +275,7 @@ if (!$tipoSeleccionado) {
 
 public function storeFinal(Request $request)
 {
-    Reservacion::create([
+    $reservacion = Reservacion::create([
         'user_id' => $request->user_id,
         'cancha_id' => $request->cancha_id,
         'id_tipo_reservacion' => $request->id_tipo_reservacion,
@@ -284,8 +286,7 @@ public function storeFinal(Request $request)
         'status' => 'programado',
     ]);
 
-    return redirect()
-        ->route('reservacions.index')
+    return view('admin.reservacions.ticketReserva', compact('reservacion'))
         ->with('success', 'Reservación creada correctamente.');
-}
+} 
 }
